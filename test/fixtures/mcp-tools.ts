@@ -1,5 +1,6 @@
 const jsonSchema = "http://json-schema.org/draft-07/schema#";
 const annotations = { readOnlyHint: true, openWorldHint: true };
+const execution = { taskSupport: "forbidden" };
 const page = {
   type: "number",
   default: 1,
@@ -47,6 +48,7 @@ export const expectedTools = [
       },
     }),
     annotations,
+    execution,
   },
   {
     name: "get_article",
@@ -60,6 +62,7 @@ export const expectedTools = [
       },
     }),
     annotations,
+    execution,
   },
   {
     name: "get_user",
@@ -70,6 +73,7 @@ export const expectedTools = [
       username: { type: "string", description: "Username" },
     }),
     annotations,
+    execution,
   },
   {
     name: "get_tags",
@@ -84,6 +88,7 @@ export const expectedTools = [
       },
     }),
     annotations,
+    execution,
   },
   {
     name: "get_comments",
@@ -99,6 +104,7 @@ export const expectedTools = [
       ["article_id"],
     ),
     annotations,
+    execution,
   },
   {
     name: "search_articles",
@@ -118,5 +124,6 @@ export const expectedTools = [
       ["q"],
     ),
     annotations,
+    execution,
   },
 ] as const;

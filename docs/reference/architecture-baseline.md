@@ -18,7 +18,7 @@ Upstream repository metadata reports no license: the GitHub license API returns 
 
 ## SRS Must traceability
 
-The source of truth is `docs/DEVto_Agent_Publishing_Platform_SRS.docx`, sections 4 and 7. It contains 39 functional and 11 security requirements marked Must; all 50 appear below.
+The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.docx`](../requirements/DEVto_Agent_Publishing_Platform_SRS.docx), sections 4 and 7. It contains 39 functional and 11 security requirements marked Must; all 50 appear below.
 
 `Preserved` is existing behavior protected by characterization. `Partial` means the current behavior covers only part of the requirement. `Deferred` identifies the future boundary and deliberately does not claim implementation. The owner is the Beads delivery phase responsible for completing the requirement.
 
@@ -72,12 +72,11 @@ The source of truth is `docs/DEVto_Agent_Publishing_Platform_SRS.docx`, sections
 | SEC-007 | Server-side publish verification enforces approval, version/hash, actor, and policy. | dev-to-mcp-4tw.4 / dev-to-mcp-4tw.5 | Deferred |
 | SEC-008 | Structured logging and audit persistence redact secrets, tokens, and unnecessary sensitive content. | dev-to-mcp-4tw.3 | Deferred |
 | SEC-009 | Timeouts/retries, rate limits, and duplicate-publish protection span discovery, security, and workflows. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 / dev-to-mcp-4tw.5 | Deferred |
-| SEC-010 | The lockfile pins dependencies and the publish workflow audits production dependencies; current high advisories block release. | dev-to-mcp-4tw.10 | Blocked |
+| SEC-010 | The lockfile pins dependencies and the Docker workflow blocks known high-severity production dependency vulnerabilities. | dev-to-mcp-4tw.10 | Preserved |
 | SEC-011 | Upstream licensing is documented, but redistribution remains blocked until a repository-level grant is verified. | dev-to-mcp-4tw.1 | Blocked |
 
-## Current release blockers
+## Current release blocker
 
-- Dependency audit: `@modelcontextprotocol/sdk@1.17.0` is affected by GHSA-345p-7cg4-v4c7, GHSA-w48q-cv73-mx4w, and GHSA-8r9q-7v3j-jr4g. The Docker publish workflow runs `npm audit --omit=dev --audit-level=high` and cannot publish until remediation lands in `dev-to-mcp-4tw.10`.
 - Redistribution license: upstream package metadata says MIT, but no repository-level license grant is present. The Docker publish workflow requires a checked-in `LICENSE` and cannot publish until provenance is resolved.
 
 Before any future workflow ships, `src/evals` must contain normal, ambiguous, hostile-content, failed-upstream, approval-mismatch, and duplicate-topic regression data plus explicit correctness, safety, evidence, and duplicate-detection thresholds.

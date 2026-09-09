@@ -5,6 +5,9 @@ const compose = readFileSync("compose.yml", "utf8");
 const dockerfile = readFileSync("Dockerfile", "utf8");
 const dockerWorkflow = readFileSync(".github/workflows/docker.yml", "utf8");
 const readme = readFileSync("README.md", "utf8");
+const license = readFileSync("LICENSE", "utf8");
+const docsIndex = readFileSync("docs/README.md", "utf8");
+const contributorGuide = readFileSync("docs/CONTRIBUTING.md", "utf8");
 const copilotInstructions = readFileSync(
   ".github/copilot-instructions.md",
   "utf8",
@@ -15,7 +18,7 @@ const rootCopilotInstructions = readFileSync(
 );
 const cursorRules = readFileSync(".cursorrules", "utf8");
 const architectureBaseline = readFileSync(
-  "docs/ARCHITECTURE_BASELINE.md",
+  "docs/reference/architecture-baseline.md",
   "utf8",
 );
 
@@ -79,10 +82,19 @@ describe("delivery contracts", () => {
   });
 
   it("blocks image publication until release gates pass", () => {
+    const buildJob = dockerWorkflow.slice(
+      dockerWorkflow.indexOf("  build:"),
+      dockerWorkflow.indexOf("  publish:"),
+    );
+    const publishJob = dockerWorkflow.slice(
+      dockerWorkflow.indexOf("  publish:"),
+    );
+
     expect(dockerfile).toMatch(/^FROM node:22-slim$/m);
     expect(dockerWorkflow).not.toContain("nickytonline");
-    expect(dockerWorkflow).toContain("npm audit --omit=dev --audit-level=high");
-    expect(dockerWorkflow).toContain("test -f LICENSE");
+    expect(buildJob).toContain("npm audit --omit=dev --audit-level=high");
+    expect(buildJob).not.toContain("test -f LICENSE");
+    expect(publishJob).toContain("test -f LICENSE");
   });
 
   it("assigns every SRS Must requirement to an owning bead", () => {
@@ -98,8 +110,12 @@ describe("delivery contracts", () => {
 
   it("keeps contributor and deployment guidance aligned", () => {
     expect(readme).not.toContain("docker.io/nickytonline");
-    expect(readme).toContain(
-      "No repository-level license grant has been verified",
+    expect(readme).toContain("Distributed under the MIT License");
+    expect(readme).toContain("[LICENSE](LICENSE)");
+    expect(license).toContain("MIT License");
+    expect(license).toContain("Copyright (c) 2026 Owen Adirah");
+    expect(contributorGuide).not.toContain(
+      "repository-level license remains unverified",
     );
     for (const guide of [
       copilotInstructions,
@@ -112,5 +128,19 @@ describe("delivery contracts", () => {
       );
       expect(guide).toContain("top-level `test/` directory");
     }
+  });
+
+  it("publishes a navigable documentation entry point", () => {
+    expect(readme).toContain("<summary>Table of Contents</summary>");
+    expect(readme).toContain(
+      "docs/architecture/project-architecture.visual-check.1440x900.light.png",
+    );
+    expect(readme).toContain("docs/tutorials/getting-started.md");
+    expect(readme).toContain("docs/how-to/connect-an-mcp-client.md");
+    expect(docsIndex).toContain("tutorials/getting-started.md");
+    expect(docsIndex).toContain("how-to/connect-an-mcp-client.md");
+    expect(contributorGuide).toContain(
+      "npm audit --omit=dev --audit-level=high",
+    );
   });
 });
