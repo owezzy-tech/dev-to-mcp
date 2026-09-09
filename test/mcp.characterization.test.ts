@@ -29,8 +29,16 @@ async function reservePort(): Promise<number> {
 async function waitForMcpEndpoint(child: ChildProcess): Promise<void> {
   const deadline = Date.now() + 10_000;
   let startupError: Error | undefined;
+  let startupOutput = "";
   child.once("error", (error) => {
     startupError = error;
+  });
+  if (!child.stdout) {
+    throw new Error("MCP server stdout is unavailable");
+  }
+  child.stdout.setEncoding("utf8");
+  child.stdout.on("data", (chunk: string) => {
+    startupOutput += chunk;
   });
 
   while (Date.now() < deadline) {
@@ -43,14 +51,16 @@ async function waitForMcpEndpoint(child: ChildProcess): Promise<void> {
       );
     }
 
-    try {
-      const response = await fetch(mcpUrl);
-      if (response.status === 200) {
-        return;
-      }
-    } catch (error) {
-      if (!(error instanceof TypeError)) {
-        throw error;
+    if (startupOutput.includes("Dev.to MCP Server started")) {
+      try {
+        const response = await fetch(mcpUrl);
+        if (response.status === 200) {
+          return;
+        }
+      } catch (error) {
+        if (!(error instanceof TypeError)) {
+          throw error;
+        }
       }
     }
 
@@ -150,5 +160,7 @@ describe.sequential("public MCP baseline", () => {
       jsonrpc: "2.0",
       id: 2,
     });
+    expect(server?.exitCode).toBeNull();
+    expect(server?.signalCode).toBeNull();
   });
 });

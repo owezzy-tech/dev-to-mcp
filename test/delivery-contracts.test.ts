@@ -3,6 +3,16 @@ import { describe, expect, it } from "vitest";
 
 const compose = readFileSync("compose.yml", "utf8");
 const dockerWorkflow = readFileSync(".github/workflows/docker.yml", "utf8");
+const readme = readFileSync("README.md", "utf8");
+const copilotInstructions = readFileSync(
+  ".github/copilot-instructions.md",
+  "utf8",
+);
+const rootCopilotInstructions = readFileSync(
+  ".copilot-instructions.md",
+  "utf8",
+);
+const cursorRules = readFileSync(".cursorrules", "utf8");
 const architectureBaseline = readFileSync(
   "docs/ARCHITECTURE_BASELINE.md",
   "utf8",
@@ -74,10 +84,29 @@ describe("delivery contracts", () => {
   });
 
   it("assigns every SRS Must requirement to an owning bead", () => {
+    expect(architectureBaseline).toContain(
+      "39 functional and 11 security requirements marked Must",
+    );
     for (const requirementId of mustRequirementIds) {
       expect(architectureBaseline).toMatch(
         new RegExp(`\\| ${requirementId} \\|[^\\n]+\\| dev-to-mcp-4tw\\.`),
       );
     }
+  });
+
+  it("keeps contributor and deployment guidance aligned", () => {
+    expect(readme).not.toContain("docker.io/nickytonline");
+    for (const guide of [
+      copilotInstructions,
+      rootCopilotInstructions,
+      cursorRules,
+    ]) {
+      expect(guide).toContain("Node.js 22+");
+      expect(guide).toContain(
+        "Tool failures currently propagate through the MCP SDK",
+      );
+    }
+    expect(copilotInstructions).toContain("top-level `test/` directory");
+    expect(cursorRules).toContain("top-level `test/` directory");
   });
 });

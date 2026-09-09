@@ -54,31 +54,9 @@ npm run format:check
 
 ## Docker
 
-### Using Pre-built Image
+### Pre-built Image
 
-Pull and run the pre-built Docker image:
-
-```bash
-# Pull the image
-docker pull docker.io/nickytonline/dev-to-mcp:latest
-
-# Run it
-docker run -d \
-  --name dev-to-mcp \
-  -e NODE_ENV=production \
-  -e PORT=3000 \
-  -p 3000:3000 \
-  --restart unless-stopped \
-  docker.io/nickytonline/dev-to-mcp:latest
-```
-
-Once it's up, check health status via:
-
-```bash
-curl -fsS http://127.0.0.1:3000/mcp
-```
-
-The server will be available at `http://localhost:3000/mcp` for MCP connections.
+This fork does not currently publish a pre-built image. Image publication remains blocked until the production dependency audit passes and the upstream redistribution license is verified. Build the image from source in the meantime.
 
 ### Building from Source
 
@@ -94,51 +72,12 @@ docker run -p 3000:3000 dev-to-mcp
 
 ### Docker Compose
 
-Using the pre-built image with Docker Compose:
-
-```yaml
-services:
-  dev-to-mcp:
-    image: docker.io/nickytonline/dev-to-mcp:latest
-    container_name: dev-to-mcp
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-    networks:
-      - main
-    healthcheck:
-      # Uses $PORT at runtime; defaults to 3000 if not set
-      test:
-        [
-          "CMD-SHELL",
-          "curl -fsS http://127.0.0.1:${PORT:-3000}/mcp >/dev/null || exit 1",
-        ]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-networks:
-  main: {}
-```
-
-For development with a local build, you can also use Docker Compose:
-
-```yaml
-# docker-compose.yml
-version: "3.8"
-services:
-  dev-to-mcp:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - PORT=3000
-```
+The checked-in Compose file starts loopback-bound PostgreSQL/pgvector and Redis services reserved for future adapters. The MCP server still runs separately.
 
 ```bash
-docker-compose up --build
+docker compose up -d
+docker compose ps
+npm run dev
 ```
 
 ## API Endpoints

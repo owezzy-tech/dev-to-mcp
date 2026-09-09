@@ -18,6 +18,8 @@ Upstream repository metadata reports no license: the GitHub license API returns 
 
 ## SRS Must traceability
 
+The source of truth is `docs/DEVto_Agent_Publishing_Platform_SRS.docx`, sections 4 and 7. It contains 39 functional and 11 security requirements marked Must; all 50 appear below.
+
 `Preserved` is existing behavior protected by characterization. `Partial` means the current behavior covers only part of the requirement. `Deferred` identifies the future boundary and deliberately does not claim implementation. The owner is the Beads delivery phase responsible for completing the requirement.
 
 | Requirement | Architecture trace | Owner | Status |
