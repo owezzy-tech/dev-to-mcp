@@ -55,11 +55,11 @@ This catalog connects the project architecture narrative to interactive, evidenc
 
 The diagrams were derived from:
 
-- [`ARCHITECTURE_BASELINE.md`](ARCHITECTURE_BASELINE.md)
-- [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md)
-- [`DEVto_Agent_Publishing_Platform_SRS.docx`](DEVto_Agent_Publishing_Platform_SRS.docx)
-- [`../CONTEXT.md`](../CONTEXT.md)
-- Current runtime source under `../src/`
-- Characterization tests and tool-contract fixtures under `../test/`
+- [Architecture baseline](../reference/architecture-baseline.md)
+- [Implementation plan](../explanation/implementation-plan.md)
+- [Software requirements](../requirements/DEVto_Agent_Publishing_Platform_SRS.docx)
+- [Domain language](../explanation/domain-language.md)
+- Current runtime source under [`../../src/`](../../src/)
+- Characterization tests and tool-contract fixtures under [`../../test/`](../../test/)
 
 The JSON specifications were frozen when their corresponding HTML deliveries succeeded. Update architecture by authoring and validating a new specification revision rather than editing a delivered specification in place.
