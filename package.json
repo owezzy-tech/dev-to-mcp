@@ -22,8 +22,16 @@
     "api",
     "server"
   ],
-  "author": "",
+  "author": "Owen Adirah",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/owezzy-tech/dev-to-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/owezzy-tech/dev-to-mcp/issues"
+  },
+  "homepage": "https://github.com/owezzy-tech/dev-to-mcp#readme",
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
