@@ -1,78 +1,104 @@
-# Dev.to MCP Server
+# DEV.to MCP Server
 
-A remote Model Context Protocol (MCP) server for interacting with the dev.to public API without requiring authentication.
+A read-only remote [Model Context Protocol](https://modelcontextprotocol.io/) server for discovering public DEV.to content through the Forem API. It exposes six tools over Streamable HTTP and does not require a DEV.to API key.
 
-## Features
+## Contents
 
-This MCP server provides access to the following dev.to public API endpoints:
+- [Project overview](#project-overview)
+- [Capabilities](#capabilities)
+- [Quick start](#quick-start)
+- [Connect an MCP client](#connect-an-mcp-client)
+- [Configuration](#configuration)
+- [Development](#development)
+- [Docker](#docker)
+- [Documentation](#documentation)
+- [Release status](#release-status)
 
-- **get_articles** - Get articles from dev.to with optional filters (username, tag, state, pagination)
-- **get_article** - Get a specific article by ID or path
-- **get_user** - Get user information by ID or username
-- **get_tags** - Get popular tags from dev.to
-- **get_comments** - Get comments for a specific article
-- **search_articles** - Search articles using query parameters
+## Project overview
 
-## Installation
+The current runtime accepts MCP requests, routes each tool call to a small DEV.to API client, and returns the public response in an MCP text-content envelope. The repository also documents a planned approval-aware publishing platform; planned components are clearly separated from implemented behavior.
 
-### Using npm
+[![Project architecture](docs/architecture/project-architecture.visual-check.1440x900.light.png)](docs/architecture/project-architecture.html)
 
-If you want to install and build from source using npm:
+Open the [interactive architecture viewer](docs/architecture/project-architecture.html) or browse the complete [architecture artifact catalog](docs/architecture/README.md).
+
+## Capabilities
+
+All tools are marked read-only and open-world.
+
+| Tool | Purpose | Main inputs |
+| --- | --- | --- |
+| `get_articles` | List public articles | `username`, `tag`, `top`, `page`, `per_page`, `state` |
+| `get_article` | Retrieve one article | `id` or `path` |
+| `get_user` | Retrieve one public user | `id` or `username` |
+| `get_tags` | List popular tags | `page`, `per_page` |
+| `get_comments` | List comments for an article | `article_id` |
+| `search_articles` | Search DEV.to feed content | `q`, `page`, `per_page`, `search_fields` |
+
+## Quick start
+
+Requirements:
+
+- Node.js 22 or newer
+- npm
 
 ```bash
-npm install
+npm ci
 npm run build
-```
-
-## Usage
-
-The server runs as a remote HTTP server on port 3000 (or the PORT environment variable) and can be used with any MCP-compatible client.
-
-```bash
 npm start
 ```
 
-The server will be available at `http://localhost:3000` for MCP connections.
+The MCP endpoint is available at `http://127.0.0.1:3000/mcp`. Confirm the server is running:
+
+```bash
+curl http://127.0.0.1:3000/mcp
+```
+
+For a guided setup, follow the [getting-started tutorial](docs/tutorials/getting-started.md).
+
+## Connect an MCP client
+
+Configure an MCP client that supports Streamable HTTP with this server URL:
+
+```text
+http://127.0.0.1:3000/mcp
+```
+
+See [Connect an MCP client](docs/how-to/connect-an-mcp-client.md) for the generic configuration shape, session behavior, and troubleshooting steps.
+
+## Configuration
+
+| Variable | Default | Accepted values or purpose |
+| --- | --- | --- |
+| `PORT` | `3000` | HTTP listening port |
+| `NODE_ENV` | `development` | `development`, `production`, or `test` |
+| `SERVER_NAME` | `dev-to-mcp` | Server name used by runtime configuration |
+| `SERVER_VERSION` | `1.0.0` | Server version used by runtime configuration |
+| `LOG_LEVEL` | `info` | `error`, `warn`, `info`, or `debug` |
 
 ## Development
 
 ```bash
-# Build the project
-npm run build
-
-# Watch mode for development
 npm run dev
-
-# Linting
+npm run typecheck
 npm run lint
-npm run lint:fix
-
-# Formatting
-npm run format
 npm run format:check
+npm run test:ci
+npm run build
 ```
+
+Contributor setup, repository boundaries, and the pull-request checklist are documented in [Contributing](docs/CONTRIBUTING.md).
 
 ## Docker
 
-### Pre-built Image
-
-This fork does not currently publish a pre-built image. Image publication remains blocked until the production dependency audit passes and the upstream redistribution license is verified. Build the image from source in the meantime.
-
-### Building from Source
-
-Build and run the MCP server using Docker:
+Build and run the MCP server from source:
 
 ```bash
-# Build the Docker image
 docker build -t dev-to-mcp .
-
-# Run the container
-docker run -p 3000:3000 dev-to-mcp
+docker run --rm -p 3000:3000 dev-to-mcp
 ```
 
-### Docker Compose
-
-The checked-in Compose file starts loopback-bound PostgreSQL/pgvector and Redis services reserved for future adapters. The MCP server still runs separately.
+The checked-in Compose file starts loopback-bound PostgreSQL/pgvector and Redis services reserved for future adapters. The current MCP server does not use them and still runs separately.
 
 ```bash
 docker compose up -d
@@ -80,57 +106,17 @@ docker compose ps
 npm run dev
 ```
 
-## API Endpoints
+## Documentation
 
-All endpoints use the public dev.to API (`https://dev.to/api`) and do not require authentication.
+Start at the [documentation index](docs/README.md):
 
-### get_articles
+- [Getting started](docs/tutorials/getting-started.md)
+- [Connect an MCP client](docs/how-to/connect-an-mcp-client.md)
+- [Architecture baseline](docs/reference/architecture-baseline.md)
+- [Domain language](docs/explanation/domain-language.md)
+- [Implementation plan](docs/explanation/implementation-plan.md)
+- [Software requirements](docs/requirements/DEVto_Agent_Publishing_Platform_SRS.docx)
 
-Get articles with optional filtering:
+## Release status
 
-- `username` - Filter by author username
-- `tag` - Filter by tag
-- `top` - Top articles (1, 7, 30, or infinity days)
-- `page` - Pagination page (default: 1)
-- `per_page` - Articles per page (default: 30, max: 1000)
-- `state` - Filter by state (fresh, rising, all)
-
-### get_article
-
-Get a specific article:
-
-- `id` - Article ID
-- `path` - Article path (e.g., "username/article-slug")
-
-### get_user
-
-Get user information:
-
-- `id` - User ID
-- `username` - Username
-
-### get_tags
-
-Get popular tags:
-
-- `page` - Pagination page (default: 1)
-- `per_page` - Tags per page (default: 10, max: 1000)
-
-### get_comments
-
-Get comments for an article:
-
-- `article_id` - Article ID (required)
-
-### search_articles
-
-Search articles:
-
-- `q` - Search query (required)
-- `page` - Pagination page (default: 1)
-- `per_page` - Articles per page (default: 30, max: 1000)
-- `search_fields` - Fields to search (title, body_text, tag_list)
-
-## License
-
-No repository-level license grant has been verified for the upstream source. Although package metadata labels the project MIT, do not redistribute source or images until provenance and licensing are confirmed.
+The production dependency audit passes against the checked-in lockfile. A pre-built image is not published. No repository-level license grant has been verified for the upstream source. Although package metadata labels the project MIT, do not redistribute source or images until provenance and licensing are confirmed.
