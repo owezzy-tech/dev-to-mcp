@@ -5,7 +5,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
  * @param data - The data to be included in the text content block.
  * @returns A CallToolResult object with the text content block.
  */
-export function createTextResult(data: unknown): CallToolResult {
+export function createTextResult(data: unknown) {
   return {
     content: [
       {
@@ -13,5 +13,5 @@ export function createTextResult(data: unknown): CallToolResult {
         text: JSON.stringify(data, null, 2),
       },
     ],
-  };
+  } satisfies CallToolResult;
 }
