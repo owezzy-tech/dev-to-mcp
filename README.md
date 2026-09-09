@@ -133,4 +133,4 @@ Search articles:
 
 ## License
 
-MIT
+No repository-level license grant has been verified for the upstream source. Although package metadata labels the project MIT, do not redistribute source or images until provenance and licensing are confirmed.

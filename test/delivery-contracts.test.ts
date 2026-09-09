@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const compose = readFileSync("compose.yml", "utf8");
+const dockerfile = readFileSync("Dockerfile", "utf8");
 const dockerWorkflow = readFileSync(".github/workflows/docker.yml", "utf8");
 const readme = readFileSync("README.md", "utf8");
 const copilotInstructions = readFileSync(
@@ -78,6 +79,7 @@ describe("delivery contracts", () => {
   });
 
   it("blocks image publication until release gates pass", () => {
+    expect(dockerfile).toMatch(/^FROM node:22-slim$/m);
     expect(dockerWorkflow).not.toContain("nickytonline");
     expect(dockerWorkflow).toContain("npm audit --omit=dev --audit-level=high");
     expect(dockerWorkflow).toContain("test -f LICENSE");
@@ -96,6 +98,9 @@ describe("delivery contracts", () => {
 
   it("keeps contributor and deployment guidance aligned", () => {
     expect(readme).not.toContain("docker.io/nickytonline");
+    expect(readme).toContain(
+      "No repository-level license grant has been verified",
+    );
     for (const guide of [
       copilotInstructions,
       rootCopilotInstructions,
@@ -105,8 +110,7 @@ describe("delivery contracts", () => {
       expect(guide).toContain(
         "Tool failures currently propagate through the MCP SDK",
       );
+      expect(guide).toContain("top-level `test/` directory");
     }
-    expect(copilotInstructions).toContain("top-level `test/` directory");
-    expect(cursorRules).toContain("top-level `test/` directory");
   });
 });
