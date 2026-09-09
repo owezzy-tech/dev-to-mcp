@@ -5,6 +5,7 @@ const compose = readFileSync("compose.yml", "utf8");
 const dockerfile = readFileSync("Dockerfile", "utf8");
 const dockerWorkflow = readFileSync(".github/workflows/docker.yml", "utf8");
 const readme = readFileSync("README.md", "utf8");
+const license = readFileSync("LICENSE", "utf8");
 const docsIndex = readFileSync("docs/README.md", "utf8");
 const contributorGuide = readFileSync("docs/CONTRIBUTING.md", "utf8");
 const copilotInstructions = readFileSync(
@@ -109,8 +110,12 @@ describe("delivery contracts", () => {
 
   it("keeps contributor and deployment guidance aligned", () => {
     expect(readme).not.toContain("docker.io/nickytonline");
-    expect(readme).toContain(
-      "No repository-level license grant has been verified",
+    expect(readme).toContain("Distributed under the MIT License");
+    expect(readme).toContain("[LICENSE](LICENSE)");
+    expect(license).toContain("MIT License");
+    expect(license).toContain("Copyright (c) 2026 Owen Adirah");
+    expect(contributorGuide).not.toContain(
+      "repository-level license remains unverified",
     );
     for (const guide of [
       copilotInstructions,
@@ -126,7 +131,7 @@ describe("delivery contracts", () => {
   });
 
   it("publishes a navigable documentation entry point", () => {
-    expect(readme).toContain("## Contents");
+    expect(readme).toContain("<summary>Table of Contents</summary>");
     expect(readme).toContain(
       "docs/architecture/project-architecture.visual-check.1440x900.light.png",
     );

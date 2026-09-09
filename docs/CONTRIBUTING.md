@@ -76,7 +76,7 @@ docker run --rm -p 3000:3000 dev-to-mcp:local
 - Add or update tests when changing a behavioral contract.
 - Keep current behavior separate from planned architecture in code and documentation.
 - Do not add credentials, tokens, production data, or deployment secrets.
-- Do not claim redistribution rights while the repository-level license remains unverified.
+- Preserve the MIT license grant, copyright notice, and source provenance when redistributing source code or container images.
 
 ## Open a pull request
 
