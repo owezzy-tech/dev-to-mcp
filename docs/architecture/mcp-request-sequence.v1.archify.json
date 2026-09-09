@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Current MCP Request Sequence",
+    "output": "mcp-request-sequence.html",
+    "quality_profile": "showcase",
+    "column_fit": "spread",
+    "viewBox": [1040, 760],
+    "views": [
+      {
+        "id": "session-init",
+        "label": "Session initialization",
+        "focus": ["mcp-client", "express-handler", "mcp-server"],
+        "note": "A valid initialize request creates a Streamable HTTP transport and returns an MCP session ID."
+      },
+      {
+        "id": "tool-call",
+        "label": "Tool execution",
+        "focus": ["mcp-client", "express-handler", "mcp-server", "devto-api"],
+        "note": "The existing session routes a tools/call request to one of six registered read tools."
+      },
+      {
+        "id": "forem-roundtrip",
+        "label": "Forem round trip",
+        "focus": ["mcp-server", "devto-api", "forem-api"],
+        "note": "The tool fetches public Forem JSON and returns it inside the MCP text result envelope."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "mcp-client",
+      "type": "external",
+      "label": "MCP Client",
+      "sublabel": "JSON-RPC caller"
+    },
+    {
+      "id": "express-handler",
+      "type": "backend",
+      "label": "Express /mcp",
+      "sublabel": "mcpHandler"
+    },
+    {
+      "id": "mcp-server",
+      "type": "backend",
+      "label": "McpServer",
+      "sublabel": "six read tools"
+    },
+    {
+      "id": "devto-api",
+      "type": "backend",
+      "label": "DevToAPI",
+      "sublabel": "fetch adapter"
+    },
+    {
+      "id": "forem-api",
+      "type": "external",
+      "label": "dev.to API",
+      "sublabel": "public Forem"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 290,
+      "label": "Initialize"
+    },
+    {
+      "from": 310,
+      "to": 610,
+      "label": "Read tool call"
+    },
+    {
+      "from": 630,
+      "to": 710,
+      "label": "MCP response"
+    }
+  ],
+  "messages": [
+    {
+      "id": "initialize-request",
+      "from": "mcp-client",
+      "to": "express-handler",
+      "y": 185,
+      "label": "POST /mcp · initialize",
+      "variant": "emphasis"
+    },
+    {
+      "id": "connect-transport",
+      "from": "express-handler",
+      "to": "mcp-server",
+      "y": 230,
+      "label": "create transport + connect"
+    },
+    {
+      "id": "session-response",
+      "from": "express-handler",
+      "to": "mcp-client",
+      "y": 278,
+      "label": "mcp-session-id",
+      "variant": "return"
+    },
+    {
+      "id": "tool-request",
+      "from": "mcp-client",
+      "to": "express-handler",
+      "y": 340,
+      "label": "POST /mcp · tools/call",
+      "variant": "emphasis"
+    },
+    {
+      "id": "route-session",
+      "from": "express-handler",
+      "to": "mcp-server",
+      "y": 385,
+      "label": "handleRequest(session)"
+    },
+    {
+      "id": "invoke-read-tool",
+      "from": "mcp-server",
+      "to": "devto-api",
+      "y": 435,
+      "label": "invoke selected read tool"
+    },
+    {
+      "id": "forem-request",
+      "from": "devto-api",
+      "to": "forem-api",
+      "y": 480,
+      "label": "GET /api/{resource}"
+    },
+    {
+      "id": "forem-json",
+      "from": "forem-api",
+      "to": "devto-api",
+      "y": 525,
+      "label": "public JSON",
+      "variant": "return"
+    },
+    {
+      "id": "tool-data",
+      "from": "devto-api",
+      "to": "mcp-server",
+      "y": 570,
+      "label": "response data",
+      "variant": "return"
+    },
+    {
+      "id": "text-result",
+      "from": "mcp-server",
+      "to": "express-handler",
+      "y": 640,
+      "label": "CallToolResult · text",
+      "variant": "return"
+    },
+    {
+      "id": "json-rpc-response",
+      "from": "express-handler",
+      "to": "mcp-client",
+      "y": 670,
+      "label": "JSON-RPC result",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "express-handler",
+      "from": 180,
+      "to": 285,
+      "type": "backend"
+    },
+    {
+      "participant": "mcp-server",
+      "from": 225,
+      "to": 275,
+      "type": "backend"
+    },
+    {
+      "participant": "express-handler",
+      "from": 335,
+      "to": 678,
+      "type": "backend"
+    },
+    {
+      "participant": "mcp-server",
+      "from": 380,
+      "to": 648,
+      "type": "backend"
+    },
+    {
+      "participant": "devto-api",
+      "from": 430,
+      "to": 578,
+      "type": "backend"
+    },
+    {
+      "participant": "forem-api",
+      "from": 475,
+      "to": 532,
+      "type": "external"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Session contract",
+      "items": [
+        "Initialize is the only POST allowed without a session ID",
+        "Later requests resolve the in-memory transport by session ID",
+        "Unknown sessions return HTTP 404"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Read path",
+      "items": [
+        "Six tools delegate to one DevToAPI instance per McpServer",
+        "DevToAPI performs the public HTTPS request",
+        "Responses are serialized into an MCP text content block"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Current limits",
+      "items": [
+        "Session expiry and cleanup are not implemented",
+        "Forem responses remain untyped unknown values",
+        "Tool-call behavior is not yet covered by characterization tests"
+      ]
+    }
+  ]
+}

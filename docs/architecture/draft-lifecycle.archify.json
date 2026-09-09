@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Planned Approval-Aware Draft Lifecycle",
+    "output": "draft-lifecycle.html",
+    "quality_profile": "showcase",
+    "viewBox": [1080, 760],
+    "views": [
+      {
+        "id": "main-lifecycle",
+        "label": "Safe publication path",
+        "focus": ["researching", "ideas-ready", "drafting", "draft-ready", "in-review", "approved", "publishing", "published"],
+        "note": "Research and drafting may proceed automatically, but publication requires exact human approval."
+      },
+      {
+        "id": "human-decision",
+        "label": "Human decision",
+        "focus": ["in-review", "approved", "rejected", "approval-invalidated", "drafting"],
+        "note": "Rejection or any edit returns the Draft to revision; an old Approval cannot be reused."
+      },
+      {
+        "id": "outcomes-recovery",
+        "label": "Outcomes and recovery",
+        "focus": ["researching", "no-publish", "publishing", "failed", "published"],
+        "note": "Low-value research can end safely, while recoverable publish failure retains an explicit retry path."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "Workflow phases"
+    },
+    {
+      "id": "decisions",
+      "label": "Human decisions and invalidation"
+    },
+    {
+      "id": "terminal",
+      "label": "Outcomes and recovery"
+    }
+  ],
+  "states": [
+    {
+      "id": "researching",
+      "type": "start",
+      "label": "RESEARCHING",
+      "sublabel": "gather evidence",
+      "lane": "main",
+      "col": 0,
+      "step": "01"
+    },
+    {
+      "id": "drafting",
+      "type": "active",
+      "label": "DRAFTING",
+      "sublabel": "create or revise",
+      "lane": "main",
+      "col": 2,
+      "step": "03"
+    },
+    {
+      "id": "in-review",
+      "type": "waiting",
+      "label": "IN_REVIEW",
+      "sublabel": "human gate",
+      "lane": "main",
+      "col": 4,
+      "step": "05"
+    },
+    {
+      "id": "publishing",
+      "type": "active",
+      "label": "PUBLISHING",
+      "sublabel": "verify then write",
+      "lane": "terminal",
+      "col": 0
+    },
+    {
+      "id": "published",
+      "type": "success",
+      "label": "PUBLISHED",
+      "sublabel": "terminal success",
+      "lane": "terminal",
+      "col": 1
+    },
+    {
+      "id": "ideas-ready",
+      "type": "neutral",
+      "label": "IDEAS_READY",
+      "sublabel": "topic selected",
+      "lane": "main",
+      "col": 1,
+      "step": "02"
+    },
+    {
+      "id": "draft-ready",
+      "type": "neutral",
+      "label": "DRAFT_READY",
+      "sublabel": "checks complete",
+      "lane": "main",
+      "col": 3,
+      "step": "04"
+    },
+    {
+      "id": "approved",
+      "type": "decision",
+      "label": "APPROVED",
+      "sublabel": "exact version + hash",
+      "lane": "decisions",
+      "col": 0,
+      "tag": "human"
+    },
+    {
+      "id": "rejected",
+      "type": "failure",
+      "label": "REJECTED",
+      "sublabel": "revision requested",
+      "lane": "decisions",
+      "col": 1,
+      "tag": "human"
+    },
+    {
+      "id": "no-publish",
+      "type": "neutral",
+      "label": "NO_PUBLISH",
+      "sublabel": "low value or duplicate",
+      "lane": "terminal",
+      "col": 1,
+      "yOffset": 76,
+      "tag": "terminal"
+    },
+    {
+      "id": "approval-invalidated",
+      "type": "failure",
+      "label": "APPROVAL_INVALIDATED",
+      "sublabel": "Draft edited",
+      "lane": "decisions",
+      "col": 2,
+      "tag": "recoverable"
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "FAILED",
+      "sublabel": "recoverable publish error",
+      "lane": "terminal",
+      "col": 2,
+      "tag": "retryable"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "research-complete",
+      "from": "researching",
+      "to": "ideas-ready"
+    },
+    {
+      "id": "idea-selected",
+      "from": "ideas-ready",
+      "to": "drafting"
+    },
+    {
+      "id": "draft-checks-pass",
+      "from": "drafting",
+      "to": "draft-ready"
+    },
+    {
+      "id": "submit-review",
+      "from": "draft-ready",
+      "to": "in-review",
+      "route": "top-channel",
+      "channelY": 90
+    },
+    {
+      "id": "human-approves",
+      "from": "in-review",
+      "to": "approved",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [[710, 220], [402, 220]]
+    },
+    {
+      "id": "human-rejects",
+      "from": "in-review",
+      "to": "rejected",
+      "variant": "security",
+      "fromSide": "right",
+      "toSide": "top",
+      "via": [[850, 157], [850, 240], [556, 240]]
+    },
+    {
+      "id": "revise-rejected",
+      "from": "rejected",
+      "to": "drafting",
+      "fromSide": "top",
+      "toSide": "top",
+      "via": [[556, 255], [900, 255], [900, 70], [402, 70]]
+    },
+    {
+      "id": "publish-authorized",
+      "from": "approved",
+      "to": "publishing",
+      "variant": "security",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "edit-invalidates",
+      "from": "approved",
+      "to": "approval-invalidated",
+      "variant": "security",
+      "fromSide": "left",
+      "toSide": "right",
+      "via": [[320, 307], [320, 345], [800, 345], [800, 307]]
+    },
+    {
+      "id": "redraft-after-edit",
+      "from": "approval-invalidated",
+      "to": "drafting",
+      "fromSide": "right",
+      "toSide": "top",
+      "via": [[940, 307], [940, 50], [402, 50]]
+    },
+    {
+      "id": "publish-succeeds",
+      "from": "publishing",
+      "to": "published",
+      "variant": "emphasis"
+    },
+    {
+      "id": "publish-fails",
+      "from": "publishing",
+      "to": "failed",
+      "variant": "security",
+      "route": "top-channel",
+      "channelY": 420,
+      "fromSide": "top",
+      "toSide": "top"
+    },
+    {
+      "id": "retry-publish",
+      "from": "failed",
+      "to": "publishing",
+      "variant": "dashed",
+      "route": "top-channel",
+      "channelY": 360,
+      "fromSide": "top",
+      "toSide": "top"
+    },
+    {
+      "id": "research-no-publish",
+      "from": "researching",
+      "to": "no-publish",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "via": [[94, 240], [20, 240], [20, 555]]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Only safe publish path",
+      "items": [
+        "IN_REVIEW requires an explicit human decision",
+        "APPROVED binds one Draft version and content hash",
+        "PUBLISHING re-verifies authorization before Forem mutation"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Approval invalidation",
+      "items": [
+        "Any edit creates a new Draft version",
+        "The prior Approval becomes unusable",
+        "The revised Draft must pass checks and review again"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Explicit outcomes",
+      "items": [
+        "Low-value or duplicate research ends as NO_PUBLISH",
+        "Recoverable publication failure remains visible",
+        "PUBLISHED is terminal and audited"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "ok": false,
+  "command": "visual-check",
+  "status": "fail",
+  "visualReview": "pending",
+  "artifact": {
+    "path": "/Users/owen_adirah/WebstormProjects/dev-to-mcp/docs/mcp-request-sequence.html",
+    "sha256": "d4ce38de41812616ff2361cda9b78d32eaf2ac2fc6c5c4b88559ddcccd8c3226",
+    "bytes": 636801
+  },
+  "state": {
+    "detail": "read",
+    "motion": "still"
+  },
+  "chrome": {
+    "status": "available",
+    "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+  },
+  "containment": {
+    "status": "fail",
+    "viewports": [
+      {
+        "width": 1440,
+        "height": 900,
+        "theme": "light",
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "scrollWidth": 1440,
+        "scrollHeight": 1349,
+        "overflowX": false,
+        "overflowY": true,
+        "ok": false,
+        "resolvedTheme": "light"
+      },
+      {
+        "width": 1600,
+        "height": 1000,
+        "theme": "light",
+        "innerWidth": 1600,
+        "innerHeight": 1000,
+        "scrollWidth": 1600,
+        "scrollHeight": 1387,
+        "overflowX": false,
+        "overflowY": true,
+        "ok": false,
+        "resolvedTheme": "light"
+      },
+      {
+        "width": 1920,
+        "height": 1080,
+        "theme": "light",
+        "innerWidth": 1920,
+        "innerHeight": 1080,
+        "scrollWidth": 1920,
+        "scrollHeight": 1387,
+        "overflowX": false,
+        "overflowY": true,
+        "ok": false,
+        "resolvedTheme": "light"
+      },
+      {
+        "width": 2048,
+        "height": 1320,
+        "theme": "light",
+        "innerWidth": 2048,
+        "innerHeight": 1320,
+        "scrollWidth": 2048,
+        "scrollHeight": 1425,
+        "overflowX": false,
+        "overflowY": true,
+        "ok": false,
+        "resolvedTheme": "light"
+      }
+    ]
+  },
+  "captures": {
+    "status": "pass",
+    "screenshots": [
+      {
+        "width": 1440,
+        "height": 900,
+        "theme": "light",
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "scrollWidth": 1440,
+        "scrollHeight": 1349,
+        "overflowX": false,
+        "overflowY": true,
+        "ok": false,
+        "resolvedTheme": "light",
+        "file": "mcp-request-sequence.visual-check.1440x900.light.png"
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "theme": "dark",
+        "innerWidth": 1440,
+        "innerHeight": 900,
+        "scrollWidth": 1440,
+        "scrollHeight": 1364,
+        "overflowX": false,
+        "overflowY": true,
+        "ok": false,
+        "resolvedTheme": "dark",
+        "file": "mcp-request-sequence.visual-check.1440x900.dark.png"
+      },
+      {
+        "width": 2048,
+        "height": 1320,
+        "theme": "light",
+        "innerWidth": 2048,
+        "innerHeight": 1320,
+        "scrollWidth": 2048,
+        "scrollHeight": 1425,
+        "overflowX": false,
+        "overflowY": true,
+        "ok": false,
+        "resolvedTheme": "light",
+        "file": "mcp-request-sequence.visual-check.2048x1320.light.png"
+      },
+      {
+        "width": 2048,
+        "height": 1320,
+        "theme": "dark",
+        "innerWidth": 2048,
+        "innerHeight": 1320,
+        "scrollWidth": 2048,
+        "scrollHeight": 1438,
+        "overflowX": false,
+        "overflowY": true,
+        "ok": false,
+        "resolvedTheme": "dark",
+        "file": "mcp-request-sequence.visual-check.2048x1320.dark.png"
+      }
+    ],
+    "contactSheet": "mcp-request-sequence.visual-check.html"
+  },
+  "sidecars": {
+    "receipt": "mcp-request-sequence.visual-check.json",
+    "contactSheet": "mcp-request-sequence.visual-check.html"
+  }
+}

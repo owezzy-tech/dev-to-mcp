@@ -56,7 +56,7 @@ The server exposes these tools to MCP clients:
 ### Build System
 
 - Uses Vite for building with ES modules output format
-- TypeScript compilation targeting Node.js 18+ 
+- TypeScript compilation targeting Node.js 22+
 - External dependency: `@modelcontextprotocol/sdk` (not bundled)
 - Source alias `@` points to `src/` directory
 - Output goes to `dist/` directory
@@ -64,7 +64,7 @@ The server exposes these tools to MCP clients:
 ### Testing
 
 - Uses Vitest as the test runner and framework
-- Test files should be placed alongside source files with `.test.ts` extension
+- Test files belong in the top-level `test/` directory with `.test.ts` extension
 - Vitest provides built-in TypeScript support and ES modules compatibility
 - Run `npm test` for watch mode development testing
 - Run `npm run test:ci` for CI/automated testing with JSON output
@@ -81,7 +81,7 @@ The server exposes these tools to MCP clients:
 
 - All API responses are wrapped in MCP `content` format with `type: 'text'` and JSON stringified data
 - Query parameter building filters out undefined/null values automatically
-- Error handling returns MCP-formatted error messages rather than throwing
+- Tool failures currently propagate through the MCP SDK; normalized safe errors are phase 2 work
 - Server runs as HTTP transport (not stdio) for remote MCP connections
 - No authentication required - uses dev.to's public API endpoints only
 
@@ -94,4 +94,4 @@ The server exposes these tools to MCP clients:
 - Use meaningful variable and function names
 - Add JSDoc comments for public APIs
 - Write tests using Vitest for new functionality
-- Place test files alongside source files with `.test.ts` extension
+- Place test files in the top-level `test/` directory with `.test.ts` extension
