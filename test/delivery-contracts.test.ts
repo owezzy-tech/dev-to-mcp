@@ -5,6 +5,8 @@ const compose = readFileSync("compose.yml", "utf8");
 const dockerfile = readFileSync("Dockerfile", "utf8");
 const dockerWorkflow = readFileSync(".github/workflows/docker.yml", "utf8");
 const readme = readFileSync("README.md", "utf8");
+const docsIndex = readFileSync("docs/README.md", "utf8");
+const contributorGuide = readFileSync("docs/CONTRIBUTING.md", "utf8");
 const copilotInstructions = readFileSync(
   ".github/copilot-instructions.md",
   "utf8",
@@ -15,7 +17,7 @@ const rootCopilotInstructions = readFileSync(
 );
 const cursorRules = readFileSync(".cursorrules", "utf8");
 const architectureBaseline = readFileSync(
-  "docs/ARCHITECTURE_BASELINE.md",
+  "docs/reference/architecture-baseline.md",
   "utf8",
 );
 
@@ -79,10 +81,19 @@ describe("delivery contracts", () => {
   });
 
   it("blocks image publication until release gates pass", () => {
+    const buildJob = dockerWorkflow.slice(
+      dockerWorkflow.indexOf("  build:"),
+      dockerWorkflow.indexOf("  publish:"),
+    );
+    const publishJob = dockerWorkflow.slice(
+      dockerWorkflow.indexOf("  publish:"),
+    );
+
     expect(dockerfile).toMatch(/^FROM node:22-slim$/m);
     expect(dockerWorkflow).not.toContain("nickytonline");
-    expect(dockerWorkflow).toContain("npm audit --omit=dev --audit-level=high");
-    expect(dockerWorkflow).toContain("test -f LICENSE");
+    expect(buildJob).toContain("npm audit --omit=dev --audit-level=high");
+    expect(buildJob).not.toContain("test -f LICENSE");
+    expect(publishJob).toContain("test -f LICENSE");
   });
 
   it("assigns every SRS Must requirement to an owning bead", () => {
@@ -112,5 +123,19 @@ describe("delivery contracts", () => {
       );
       expect(guide).toContain("top-level `test/` directory");
     }
+  });
+
+  it("publishes a navigable documentation entry point", () => {
+    expect(readme).toContain("## Contents");
+    expect(readme).toContain(
+      "docs/architecture/project-architecture.visual-check.1440x900.light.png",
+    );
+    expect(readme).toContain("docs/tutorials/getting-started.md");
+    expect(readme).toContain("docs/how-to/connect-an-mcp-client.md");
+    expect(docsIndex).toContain("tutorials/getting-started.md");
+    expect(docsIndex).toContain("how-to/connect-an-mcp-client.md");
+    expect(contributorGuide).toContain(
+      "npm audit --omit=dev --audit-level=high",
+    );
   });
 });
