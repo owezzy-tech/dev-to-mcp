@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "DEV.to Agent Publishing Platform",
+    "output": "project-architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [1520, 850],
+    "views": [
+      {
+        "id": "current-runtime",
+        "label": "Implemented today",
+        "focus": ["mcp-clients", "current-mcp", "forem"],
+        "note": "The shipped runtime is a read-only Streamable HTTP MCP server backed by the public Forem API."
+      },
+      {
+        "id": "delivery-paths",
+        "label": "Planned delivery paths",
+        "focus": ["mcp-clients", "mcp-adapter", "author-owner", "webmcp-dashboard", "shared-core"],
+        "note": "MCP and the dashboard converge on one validated application core."
+      },
+      {
+        "id": "workflow-safety",
+        "label": "Workflow safety",
+        "focus": ["shared-core", "workflows-worker", "postgres-pgvector", "redis", "evals-gate"],
+        "note": "Durable workflow state, coordination, and evaluation gates protect publication."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "mcp-clients",
+      "type": "external",
+      "label": "MCP Clients",
+      "sublabel": "Streamable HTTP",
+      "pos": [30, 205],
+      "size": [140, 66]
+    },
+    {
+      "id": "author-owner",
+      "type": "external",
+      "label": "Author / Owner",
+      "sublabel": "human approval",
+      "pos": [30, 520],
+      "size": [140, 66]
+    },
+    {
+      "id": "current-mcp",
+      "type": "backend",
+      "label": "Current MCP Server",
+      "sublabel": "src/index.ts",
+      "tag": "IMPLEMENTED",
+      "pos": [270, 145],
+      "size": [180, 72]
+    },
+    {
+      "id": "forem",
+      "type": "external",
+      "label": "Forem API",
+      "sublabel": "dev.to public + auth",
+      "pos": [1270, 145],
+      "size": [190, 72]
+    },
+    {
+      "id": "mcp-adapter",
+      "type": "backend",
+      "label": "MCP Adapter",
+      "sublabel": "src/mcp",
+      "tag": "PLANNED",
+      "pos": [270, 350],
+      "size": [180, 72]
+    },
+    {
+      "id": "webmcp-dashboard",
+      "type": "frontend",
+      "label": "Angular WebMCP",
+      "sublabel": "dashboard + REST",
+      "tag": "PLANNED",
+      "pos": [270, 545],
+      "size": [180, 72]
+    },
+    {
+      "id": "shared-core",
+      "type": "backend",
+      "label": "Shared Core",
+      "sublabel": "models · policies · ports",
+      "tag": "PLANNED",
+      "pos": [580, 445],
+      "size": [190, 78]
+    },
+    {
+      "id": "workflows-worker",
+      "type": "backend",
+      "label": "Workflows + Worker",
+      "sublabel": "approval-aware runs",
+      "tag": "PLANNED",
+      "pos": [900, 445],
+      "size": [200, 78]
+    },
+    {
+      "id": "postgres-pgvector",
+      "type": "database",
+      "label": "PostgreSQL + pgvector",
+      "sublabel": "durable source of truth",
+      "tag": "PLANNED",
+      "pos": [1270, 345],
+      "size": [190, 72]
+    },
+    {
+      "id": "redis",
+      "type": "database",
+      "label": "Redis",
+      "sublabel": "limits · cache · leases",
+      "tag": "PLANNED",
+      "pos": [1270, 490],
+      "size": [190, 72]
+    },
+    {
+      "id": "evals-gate",
+      "type": "security",
+      "label": "Evaluation Gate",
+      "sublabel": "fixtures · thresholds",
+      "tag": "PLANNED",
+      "pos": [900, 650],
+      "size": [200, 72]
+    },
+    {
+      "id": "model-provider",
+      "type": "external",
+      "label": "Model Provider",
+      "sublabel": "generation + embeddings",
+      "pos": [1270, 650],
+      "size": [190, 72]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Implemented read-only runtime",
+      "wraps": ["current-mcp"],
+      "pad": 32
+    },
+    {
+      "kind": "region",
+      "label": "Planned publishing platform",
+      "wraps": ["mcp-adapter", "webmcp-dashboard", "shared-core", "workflows-worker", "postgres-pgvector", "redis", "evals-gate"],
+      "pad": 26
+    }
+  ],
+  "connections": [
+    {
+      "id": "current-client-request",
+      "from": "mcp-clients",
+      "to": "current-mcp",
+      "label": "POST /mcp",
+      "variant": "emphasis"
+    },
+    {
+      "id": "current-forem-read",
+      "from": "current-mcp",
+      "to": "forem",
+      "label": "public HTTPS reads"
+    },
+    {
+      "id": "planned-client-request",
+      "from": "mcp-clients",
+      "to": "mcp-adapter",
+      "label": "planned MCP tools",
+      "variant": "dashed"
+    },
+    {
+      "id": "mcp-to-core",
+      "from": "mcp-adapter",
+      "to": "shared-core",
+      "label": "validated handlers",
+      "variant": "dashed"
+    },
+    {
+      "id": "owner-to-dashboard",
+      "from": "author-owner",
+      "to": "webmcp-dashboard",
+      "label": "review + approval",
+      "variant": "security",
+      "labelDy": -45
+    },
+    {
+      "id": "dashboard-to-core",
+      "from": "webmcp-dashboard",
+      "to": "shared-core",
+      "label": "versioned REST",
+      "variant": "dashed"
+    },
+    {
+      "id": "workflow-to-core",
+      "from": "workflows-worker",
+      "to": "shared-core",
+      "label": "core ports + policy",
+      "variant": "dashed"
+    },
+    {
+      "id": "core-to-forem",
+      "from": "shared-core",
+      "to": "forem",
+      "label": "server-side Forem adapter",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [[675, 270], [1365, 270]]
+    },
+    {
+      "id": "workflow-to-postgres",
+      "from": "workflows-worker",
+      "to": "postgres-pgvector",
+      "label": "state + audit + vectors",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "left",
+      "via": [[1000, 400], [1210, 400], [1210, 381]]
+    },
+    {
+      "id": "workflow-to-redis",
+      "from": "workflows-worker",
+      "to": "redis",
+      "label": "leases + coordination",
+      "variant": "dashed",
+      "labelDy": 30
+    },
+    {
+      "id": "workflow-to-model",
+      "from": "workflows-worker",
+      "to": "model-provider",
+      "label": "draft + embed",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "left",
+      "via": [[1000, 570], [1200, 570], [1200, 686]]
+    },
+    {
+      "id": "evals-to-workflow",
+      "from": "evals-gate",
+      "to": "workflows-worker",
+      "label": "release thresholds",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Current reality",
+      "items": [
+        "Six read-only MCP tools run from src/index.ts",
+        "DevToAPI calls the public Forem API",
+        "No publishing workflow is implemented yet"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Target depth",
+      "items": [
+        "MCP and WebMCP share one validated core",
+        "Adapters depend on core, never the reverse",
+        "Workflow state and audit history are durable"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Publication safety",
+      "items": [
+        "Human approval is required for the exact Draft version",
+        "Editing invalidates approval",
+        "Evaluation thresholds gate workflow release"
+      ]
+    }
+  ]
+}
