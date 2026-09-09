@@ -1,24 +1,48 @@
 import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 import { once } from "node:events";
+import { createServer } from "node:net";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-
-const mcpUrl = "http://127.0.0.1:3000/mcp";
-const publicToolNames = [
-  "get_articles",
-  "get_article",
-  "get_user",
-  "get_tags",
-  "get_comments",
-  "search_articles",
-] as const;
+import { expectedTools } from "./fixtures/mcp-tools.js";
 
 let server: ChildProcess | undefined;
+let mcpUrl: string;
 
-async function waitForMcpEndpoint(): Promise<void> {
+async function reservePort(): Promise<number> {
+  const listener = createServer();
+  await new Promise<void>((resolve, reject) => {
+    listener.once("error", reject);
+    listener.listen(0, "127.0.0.1", resolve);
+  });
+
+  const address = listener.address();
+  if (!address || typeof address === "string") {
+    throw new Error("Failed to reserve a TCP port");
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    listener.close((error) => (error ? reject(error) : resolve()));
+  });
+  return address.port;
+}
+
+async function waitForMcpEndpoint(child: ChildProcess): Promise<void> {
   const deadline = Date.now() + 10_000;
+  let startupError: Error | undefined;
+  child.once("error", (error) => {
+    startupError = error;
+  });
 
   while (Date.now() < deadline) {
+    if (startupError) {
+      throw startupError;
+    }
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw new Error(
+        `MCP server exited before startup (code=${child.exitCode}, signal=${child.signalCode})`,
+      );
+    }
+
     try {
       const response = await fetch(mcpUrl);
       if (response.status === 200) {
@@ -36,18 +60,28 @@ async function waitForMcpEndpoint(): Promise<void> {
   throw new Error("MCP endpoint did not start within 10 seconds");
 }
 
+function parseSseData(body: string): unknown {
+  const dataLine = body.split("\n").find((line) => line.startsWith("data: "));
+  if (!dataLine) {
+    throw new Error("MCP response did not contain an SSE data event");
+  }
+  return JSON.parse(dataLine.slice(6)) as unknown;
+}
+
 describe.sequential("public MCP baseline", () => {
   beforeAll(async () => {
+    const port = await reservePort();
+    mcpUrl = `http://127.0.0.1:${port}/mcp`;
     server = spawn(
       process.execPath,
       ["--experimental-strip-types", "src/index.ts"],
       {
         cwd: process.cwd(),
-        env: { ...process.env, NODE_ENV: "test" },
+        env: { ...process.env, NODE_ENV: "test", PORT: String(port) },
       },
     );
 
-    await waitForMcpEndpoint();
+    await waitForMcpEndpoint(server);
   }, 15_000);
 
   afterAll(async () => {
@@ -110,18 +144,11 @@ describe.sequential("public MCP baseline", () => {
         params: {},
       }),
     });
-    const toolsBody = await toolsResponse.text();
-
     expect(toolsResponse.status).toBe(200);
-    for (const toolName of publicToolNames) {
-      expect(toolsBody).toContain(`"name":"${toolName}"`);
-    }
-    expect(toolsBody).toContain('"article_id":{"type":"number"');
-    expect(toolsBody).toContain('"q":{"type":"string"');
-    expect(toolsBody).toContain(
-      '"state":{"type":"string","enum":["fresh","rising","all"]',
-    );
-    expect(toolsBody).toContain('"type":"object"');
-    expect(toolsBody).toContain('"additionalProperties":false');
+    expect(parseSseData(await toolsResponse.text())).toEqual({
+      result: { tools: expectedTools },
+      jsonrpc: "2.0",
+      id: 2,
+    });
   });
 });
