@@ -9,7 +9,7 @@ on:
 env:
   REGISTRY: docker.io
   IMAGE_NAME: dev-to-mcp
-  DOCKERHUB_NAMESPACE: nickytonline
+  DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE }}
 
 jobs:
   build:
@@ -17,6 +17,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Block known high-severity dependency vulnerabilities
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Verify redistribution license
+        run: test -f LICENSE
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -45,9 +60,11 @@ jobs:
       - name: Validate Docker Hub secrets
         run: |
           set -euo pipefail
+          : "${DOCKERHUB_NAMESPACE:?Missing repository variable DOCKERHUB_NAMESPACE}"
           : "${DOCKERHUB_USERNAME:?Missing Docker credentials}"
           : "${DOCKERHUB_TOKEN:?Missing Docker credentials}"
         env:
+          DOCKERHUB_NAMESPACE: ${{ env.DOCKERHUB_NAMESPACE }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 

@@ -25,7 +25,7 @@ const getServer = () => {
         "Get articles from dev.to. Can filter by username, tag, or other parameters.",
       annotations: {
         readOnlyHint: true,
-        openWorldHint: true
+        openWorldHint: true,
       },
       inputSchema: {
         username: z.string().optional().describe("Filter articles by username"),
@@ -56,7 +56,10 @@ const getServer = () => {
       logger.info({ args }, "Getting articles");
       try {
         const data = await devToAPI.getArticles(args);
-        logger.debug({ articlesCount: Array.isArray(data) ? data.length : 'unknown' }, "Articles retrieved");
+        logger.debug(
+          { articlesCount: Array.isArray(data) ? data.length : "unknown" },
+          "Articles retrieved",
+        );
         return createTextResult(data);
       } catch (error) {
         logger.error({ error, args }, "Failed to get articles");
@@ -72,7 +75,7 @@ const getServer = () => {
       description: "Get a specific article by ID or path",
       annotations: {
         readOnlyHint: true,
-        openWorldHint: true
+        openWorldHint: true,
       },
       inputSchema: {
         id: z.number().optional().describe("Article ID"),
@@ -90,7 +93,10 @@ const getServer = () => {
       }
       try {
         const data = await devToAPI.getArticle(args);
-        logger.debug({ articleId: args.id, articlePath: args.path }, "Article retrieved");
+        logger.debug(
+          { articleId: args.id, articlePath: args.path },
+          "Article retrieved",
+        );
         return createTextResult(data);
       } catch (error) {
         logger.error({ error, args }, "Failed to get article");
@@ -106,7 +112,7 @@ const getServer = () => {
       description: "Get user information by ID or username",
       annotations: {
         readOnlyHint: true,
-        openWorldHint: true
+        openWorldHint: true,
       },
       inputSchema: {
         id: z.number().optional().describe("User ID"),
@@ -121,7 +127,10 @@ const getServer = () => {
       }
       try {
         const data = await devToAPI.getUser(args);
-        logger.debug({ userId: args.id, username: args.username }, "User retrieved");
+        logger.debug(
+          { userId: args.id, username: args.username },
+          "User retrieved",
+        );
         return createTextResult(data);
       } catch (error) {
         logger.error({ error, args }, "Failed to get user");
@@ -137,7 +146,7 @@ const getServer = () => {
       description: "Get popular tags from dev.to",
       annotations: {
         readOnlyHint: true,
-        openWorldHint: true
+        openWorldHint: true,
       },
       inputSchema: {
         page: z
@@ -156,7 +165,10 @@ const getServer = () => {
       logger.info({ args }, "Getting tags");
       try {
         const data = await devToAPI.getTags(args);
-        logger.debug({ tagsCount: Array.isArray(data) ? data.length : 'unknown' }, "Tags retrieved");
+        logger.debug(
+          { tagsCount: Array.isArray(data) ? data.length : "unknown" },
+          "Tags retrieved",
+        );
         return createTextResult(data);
       } catch (error) {
         logger.error({ error, args }, "Failed to get tags");
@@ -172,7 +184,7 @@ const getServer = () => {
       description: "Get comments for a specific article",
       annotations: {
         readOnlyHint: true,
-        openWorldHint: true
+        openWorldHint: true,
       },
       inputSchema: {
         article_id: z.number().describe("Article ID to get comments for"),
@@ -182,7 +194,10 @@ const getServer = () => {
       logger.info({ args }, "Getting comments");
       try {
         const data = await devToAPI.getComments(args);
-        logger.debug({ commentsCount: Array.isArray(data) ? data.length : 'unknown' }, "Comments retrieved");
+        logger.debug(
+          { commentsCount: Array.isArray(data) ? data.length : "unknown" },
+          "Comments retrieved",
+        );
         return createTextResult(data);
       } catch (error) {
         logger.error({ error, args }, "Failed to get comments");
@@ -198,7 +213,7 @@ const getServer = () => {
       description: "Search articles using query parameters",
       annotations: {
         readOnlyHint: true,
-        openWorldHint: true
+        openWorldHint: true,
       },
       inputSchema: {
         q: z.string().describe("Search query"),
@@ -224,7 +239,10 @@ const getServer = () => {
       logger.info({ args }, "Searching articles");
       try {
         const data = await devToAPI.searchArticles(args);
-        logger.debug({ resultsCount: Array.isArray(data) ? data.length : 'unknown' }, "Article search completed");
+        logger.debug(
+          { resultsCount: Array.isArray(data) ? data.length : "unknown" },
+          "Article search completed",
+        );
         return createTextResult(data);
       } catch (error) {
         logger.error({ error, args }, "Failed to search articles");
@@ -268,7 +286,9 @@ const mcpHandler = async (req: express.Request, res: express.Response) => {
   }
 
   if (req.method === "POST" && !sessionId) {
-    logger.warn("POST request without session ID for non-initialization request");
+    logger.warn(
+      "POST request without session ID for non-initialization request",
+    );
     res
       .status(400)
       .json({ error: "Session ID required for non-initialization requests" });
@@ -298,7 +318,10 @@ async function main() {
   const port = config.PORT;
 
   app.listen(port, () => {
-    logger.info({ port, environment: config.NODE_ENV }, "Dev.to MCP Server started");
+    logger.info(
+      { port, environment: config.NODE_ENV },
+      "Dev.to MCP Server started",
+    );
   });
 }
 

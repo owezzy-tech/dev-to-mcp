@@ -2,7 +2,9 @@ import { z } from "zod";
 
 const configSchema = z.object({
   PORT: z.coerce.number().default(3000),
-  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "production", "test"])
+    .default("development"),
   SERVER_NAME: z.string().default("dev-to-mcp"),
   SERVER_VERSION: z.string().default("1.0.0"),
   LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).default("info"),
