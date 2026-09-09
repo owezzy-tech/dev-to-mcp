@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { createTextResult } from "./utils.ts";
+import { describe, expect, it } from "vitest";
+import { createTextResult } from "../src/lib/utils.ts";
 
 describe("createTextResult", () => {
   const mockUser = {
