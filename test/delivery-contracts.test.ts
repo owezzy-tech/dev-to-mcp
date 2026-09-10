@@ -92,6 +92,9 @@ describe("delivery contracts", () => {
 
     expect(dockerfile).toMatch(/^FROM node:22-slim$/m);
     expect(dockerWorkflow).not.toContain("nickytonline");
+    expect(dockerWorkflow).toContain(
+      "DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE || 'owezzy' }}",
+    );
     expect(buildJob).toContain("npm audit --omit=dev --audit-level=high");
     expect(buildJob).not.toContain("test -f LICENSE");
     expect(publishJob).toContain("test -f LICENSE");
