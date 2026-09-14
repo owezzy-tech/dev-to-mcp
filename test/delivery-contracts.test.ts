@@ -24,6 +24,7 @@ const architectureBaseline = readFileSync(
 const beadsConfig = readFileSync(".beads/config.yaml", "utf8");
 const packageManifest = readFileSync("package.json", "utf8");
 const packageLock = readFileSync("package-lock.json", "utf8");
+const readmeTemplate = readFileSync("BLANK_README.md", "utf8");
 
 const mustRequirementIds = [
   "FR-001",
@@ -204,5 +205,22 @@ describe("delivery contracts", () => {
       "no repository-level license grant is present",
     );
     expect(architectureBaseline).not.toContain("Current release blocker");
+  });
+
+  it("follows the blank README template without unresolved placeholders", () => {
+    const headings = (text: string) =>
+      text
+        .split("\n")
+        .filter((line) => /^#{2,3} /.test(line))
+        .map((line) => line.trim());
+
+    for (const heading of headings(readmeTemplate)) {
+      expect(headings(readme)).toContain(heading);
+    }
+
+    expect(readme).toContain("<summary>Table of Contents</summary>");
+    expect(readme).not.toMatch(
+      /github_username|repo_name|project_title|project_description|images\/logo\.png|YOUR_|ENTER YOUR|example\.com|LICENSE\.txt/i,
+    );
   });
 });
