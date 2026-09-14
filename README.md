@@ -315,7 +315,7 @@ Project Link: [https://github.com/owezzy-tech/dev-to-mcp](https://github.com/owe
 [TypeScript-url]: https://www.typescriptlang.org/
 [Express.js]: https://img.shields.io/badge/Express-5.1-000000?style=for-the-badge&logo=express&logoColor=white
 [Express-url]: https://expressjs.com/
-[MCP]: https://img.shields.io/badge/MCP-SDK_1.17-5A45FF?style=for-the-badge
+[MCP]: https://img.shields.io/badge/MCP-SDK_1.30-5A45FF?style=for-the-badge
 [MCP-url]: https://modelcontextprotocol.io/
 [Vite]: https://img.shields.io/badge/Vite-5.x-646CFF?style=for-the-badge&logo=vite&logoColor=white
 [Vite-url]: https://vitejs.dev/

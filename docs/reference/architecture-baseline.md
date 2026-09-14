@@ -72,11 +72,15 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | SEC-007 | Server-side publish verification enforces approval, version/hash, actor, and policy. | dev-to-mcp-4tw.4 / dev-to-mcp-4tw.5 | Deferred |
 | SEC-008 | Structured logging and audit persistence redact secrets, tokens, and unnecessary sensitive content. | dev-to-mcp-4tw.3 | Deferred |
 | SEC-009 | Timeouts/retries, rate limits, and duplicate-publish protection span discovery, security, and workflows. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 / dev-to-mcp-4tw.5 | Deferred |
-| SEC-010 | The lockfile pins dependencies and the Docker workflow blocks known high-severity production dependency vulnerabilities. | dev-to-mcp-4tw.10 | Preserved |
+| SEC-010 | The lockfile pins the MCP SDK and its production dependencies at patched releases, and the Docker workflow blocks known high-severity production dependency vulnerabilities. | dev-to-mcp-4tw.10 | Preserved |
 | SEC-011 | Upstream licensing is documented, but redistribution remains blocked until a repository-level grant is verified. | dev-to-mcp-4tw.1 | Blocked |
 
 ## Current release blocker
 
 - Redistribution license: upstream package metadata says MIT, but no repository-level license grant is present. The Docker publish workflow requires a checked-in `LICENSE` and cannot publish until provenance is resolved.
+
+## Dependency posture
+
+`npm audit --omit=dev --audit-level=high` reports zero vulnerabilities. All five production advisories recorded by SEC-010 (`@modelcontextprotocol/sdk`, `ajv`, `body-parser`, `path-to-regexp`, `qs`) are resolved, and the lockfile pins `@modelcontextprotocol/sdk@1.30.0`. The remaining audit findings are dev-only (Vite, Vitest, ESLint, and their `minimatch`/`esbuild` transitives), fall outside the Docker production audit gate, and require a major toolchain upgrade tracked as separate work.
 
 Before any future workflow ships, `src/evals` must contain normal, ambiguous, hostile-content, failed-upstream, approval-mismatch, and duplicate-topic regression data plus explicit correctness, safety, evidence, and duplicate-detection thresholds.
