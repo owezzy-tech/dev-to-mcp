@@ -22,6 +22,8 @@ const architectureBaseline = readFileSync(
   "utf8",
 );
 const beadsConfig = readFileSync(".beads/config.yaml", "utf8");
+const packageManifest = readFileSync("package.json", "utf8");
+const packageLock = readFileSync("package-lock.json", "utf8");
 
 const mustRequirementIds = [
   "FR-001",
@@ -155,5 +157,36 @@ describe("delivery contracts", () => {
     expect(beadsConfig).not.toMatch(/placeholder|example\.com|YOUR_/i);
     expect(beadsConfig).toContain('issue-prefix: "dev-to-mcp"');
     expect(beadsConfig).not.toMatch(/^#\s*issue-prefix:/m);
+  });
+
+  it("pins the MCP SDK above the SEC-010 advisory range", () => {
+    const manifest = JSON.parse(packageManifest) as {
+      dependencies: Record<string, string>;
+    };
+    const [floorMajor, floorMinor] = (
+      manifest.dependencies["@modelcontextprotocol/sdk"] ?? ""
+    )
+      .replace(/^[^\d]*/, "")
+      .split(".")
+      .map(Number);
+
+    expect([floorMajor, floorMinor]).toEqual(
+      expect.arrayContaining([expect.any(Number)]),
+    );
+    expect(floorMajor > 1 || (floorMajor === 1 && floorMinor >= 26)).toBe(true);
+
+    const lock = JSON.parse(packageLock) as {
+      packages: Record<string, { version?: string }>;
+    };
+    const [lockedMajor, lockedMinor] = (
+      lock.packages["node_modules/@modelcontextprotocol/sdk"]?.version ??
+      "0.0.0"
+    )
+      .split(".")
+      .map(Number);
+
+    expect(lockedMajor > 1 || (lockedMajor === 1 && lockedMinor >= 26)).toBe(
+      true,
+    );
   });
 });
