@@ -5,6 +5,8 @@ export const API_ERROR_CODES = {
   upstreamNetwork: "UPSTREAM_NETWORK_ERROR",
   upstreamPayload: "UPSTREAM_PAYLOAD_ERROR",
   retryExhausted: "RETRY_EXHAUSTED",
+  unauthorized: "UNAUTHORIZED",
+  forbidden: "FORBIDDEN",
   internal: "INTERNAL_ERROR",
 } as const;
 
@@ -129,6 +131,28 @@ export class RetryExhaustedError extends ApiError {
       { cause: lastError },
     );
     this.lastError = lastError;
+  }
+}
+
+export class UnauthorizedError extends ApiError {
+  override readonly name = "UnauthorizedError";
+
+  constructor(
+    publicMessage = "Authentication is required.",
+    options: ApiErrorOptions = {},
+  ) {
+    super(API_ERROR_CODES.unauthorized, publicMessage, options);
+  }
+}
+
+export class ForbiddenError extends ApiError {
+  override readonly name = "ForbiddenError";
+
+  constructor(
+    publicMessage = "The requested capability is not granted.",
+    options: ApiErrorOptions = {},
+  ) {
+    super(API_ERROR_CODES.forbidden, publicMessage, options);
   }
 }
 

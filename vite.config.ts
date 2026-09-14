@@ -15,6 +15,10 @@ export default defineConfig(({ command }) => ({
         "@modelcontextprotocol/sdk/server/mcp.js",
         "@modelcontextprotocol/sdk/server/streamableHttp.js",
         "@modelcontextprotocol/sdk/types.js",
+        "@prisma/client",
+        "@prisma/adapter-pg",
+        "ioredis",
+        "pg",
         "express",
         "zod",
         "node:crypto",
@@ -51,6 +55,14 @@ export default defineConfig(({ command }) => ({
     },
   },
   ssr: {
-    external: ["@modelcontextprotocol/sdk", "express", "zod"],
+    external: [
+      "@modelcontextprotocol/sdk",
+      "@prisma/client",
+      "@prisma/adapter-pg",
+      "ioredis",
+      "pg",
+      "express",
+      "zod",
+    ],
   },
 }));

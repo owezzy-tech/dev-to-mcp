@@ -1,0 +1,278 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector]
+}
+
+enum Capability {
+  READ
+  DRAFT_WRITE
+  PUBLISH
+}
+
+enum ApprovalDecision {
+  APPROVED
+  REJECTED
+}
+
+enum WorkflowState {
+  RESEARCHING
+  IDEA_READY
+  DRAFTING
+  DRAFT_READY
+  AWAITING_APPROVAL
+  APPROVED
+  PUBLISHING
+  PUBLISHED
+  REJECTED
+  DISCARDED
+  FAILED
+  NO_PUBLISH
+}
+
+enum ActorType {
+  AUTHOR
+  AGENT
+  SYSTEM
+  SCHEDULER
+}
+
+enum EvaluationKind {
+  RETRIEVAL
+  DRAFTING
+  SAFETY
+  APPROVAL
+  PROTOCOL
+}
+
+model Author {
+  id           String   @id @default(uuid())
+  githubUserId Int      @unique
+  githubLogin  String   @unique
+  email        String?
+  displayName  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  config         AuthorConfig?
+  authorizations AuthorAuthorization[]
+  snapshots      ArticleSnapshot[]
+  drafts         Draft[]
+  approvals      Approval[]
+  workflowRuns   WorkflowRun[]
+  auditEvents    AuditEvent[]
+  evaluations    Evaluation[]
+  sessions       DashboardSession[]
+
+  @@map("authors")
+}
+
+model AuthorConfig {
+  id                     String   @id @default(uuid())
+  authorId               String   @unique
+  weeklyCadence          String   @default("weekly")
+  topics                 String[] @default([])
+  styleGuidance          String?
+  maxPerPage             Int      @default(30)
+  maxRequestBytes        Int      @default(262144)
+  rateLimitPerMinute     Int      @default(60)
+  approvalTtlMinutes     Int      @default(1440)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("author_configs")
+}
+
+model AuthorAuthorization {
+  id         String     @id @default(uuid())
+  authorId   String
+  capability Capability
+  grantedAt  DateTime   @default(now())
+  revokedAt  DateTime?
+
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([authorId, capability])
+  @@map("author_authorizations")
+}
+
+model ArticleSnapshot {
+  id                 String   @id @default(uuid())
+  authorId           String?
+  foremArticleId     Int
+  title              String
+  description        String?
+  slug               String?
+  path               String?
+  url                String?
+  publishedAt        DateTime?
+  readablePublishDate String?
+  tagList            String[] @default([])
+  commentsCount      Int      @default(0)
+  publicReactionsCount Int    @default(0)
+  authorUsername     String?
+  observedAt         DateTime @default(now())
+
+  author     Author?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  embedding  Embedding?
+  draftLinks DraftSnapshot[]
+
+  @@unique([foremArticleId])
+  @@index([observedAt])
+  @@map("article_snapshots")
+}
+
+model Embedding {
+  id        String   @id @default(uuid())
+  snapshotId String  @unique
+  model     String
+  dimensions Int
+  vector    Unsupported("vector(1536)")
+  createdAt DateTime @default(now())
+
+  snapshot ArticleSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@map("embeddings")
+}
+
+model Draft {
+  id            String   @id @default(uuid())
+  authorId      String
+  title         String
+  slug          String?
+  tags          String[] @default([])
+  currentVersionId String? @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  author          Author          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  currentVersion  DraftVersion?   @relation("DraftCurrentVersion", fields: [currentVersionId], references: [id])
+  versions        DraftVersion[]  @relation("DraftVersions")
+  workflowRuns    WorkflowRun[]
+  auditEvents     AuditEvent[]
+  snapshots       DraftSnapshot[]
+
+  @@index([authorId])
+  @@map("drafts")
+}
+
+model DraftVersion {
+  id          String   @id @default(uuid())
+  draftId     String
+  version     Int
+  markdown    String
+  contentHash String
+  createdAt   DateTime @default(now())
+
+  draft        Draft     @relation("DraftVersions", fields: [draftId], references: [id], onDelete: Cascade)
+  currentOf    Draft?    @relation("DraftCurrentVersion")
+  approvals    Approval[]
+
+  @@unique([draftId, version])
+  @@map("draft_versions")
+}
+
+model DraftSnapshot {
+  draftId    String
+  snapshotId String
+
+  draft    Draft           @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  snapshot ArticleSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@id([draftId, snapshotId])
+  @@map("draft_snapshots")
+}
+
+model Approval {
+  id             String           @id @default(uuid())
+  authorId       String
+  draftVersionId String
+  decision       ApprovalDecision
+  contentHash    String
+  feedback       String?
+  decidedAt      DateTime         @default(now())
+  expiresAt      DateTime
+
+  author       Author       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  draftVersion DraftVersion @relation(fields: [draftVersionId], references: [id], onDelete: Cascade)
+
+  @@index([draftVersionId, contentHash])
+  @@map("approvals")
+}
+
+model WorkflowRun {
+  id            String        @id @default(uuid())
+  authorId      String
+  draftId       String?
+  idempotencyKey String?      @unique
+  state         WorkflowState
+  attempt       Int           @default(0)
+  leaseUntil    DateTime?
+  lastError     String?
+  startedAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  draft  Draft? @relation(fields: [draftId], references: [id], onDelete: SetNull)
+
+  @@index([state, leaseUntil])
+  @@map("workflow_runs")
+}
+
+model AuditEvent {
+  id            String    @id @default(uuid())
+  authorId      String
+  draftId       String?
+  actorType     ActorType
+  correlationId String
+  tool          String
+  sanitizedInput Json
+  result        String
+  resource      String?
+  resourceVersion String?
+  createdAt     DateTime  @default(now())
+
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  draft  Draft? @relation(fields: [draftId], references: [id], onDelete: SetNull)
+
+  @@index([correlationId])
+  @@index([draftId, createdAt])
+  @@map("audit_events")
+}
+
+model Evaluation {
+  id         String          @id @default(uuid())
+  authorId   String?
+  kind       EvaluationKind
+  name       String
+  status     String
+  score      Float?
+  details    Json?
+  createdAt  DateTime        @default(now())
+
+  author Author? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([kind, createdAt])
+  @@map("evaluations")
+}
+
+model DashboardSession {
+  id           String   @id @default(uuid())
+  authorId     String
+  tokenHash    String   @unique
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+  lastSeenAt   DateTime @default(now())
+  revokedAt    DateTime?
+
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@map("dashboard_sessions")
+}
