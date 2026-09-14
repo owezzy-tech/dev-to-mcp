@@ -21,6 +21,7 @@ const architectureBaseline = readFileSync(
   "docs/reference/architecture-baseline.md",
   "utf8",
 );
+const beadsConfig = readFileSync(".beads/config.yaml", "utf8");
 
 const mustRequirementIds = [
   "FR-001",
@@ -145,5 +146,12 @@ describe("delivery contracts", () => {
     expect(contributorGuide).toContain(
       "npm audit --omit=dev --audit-level=high",
     );
+  });
+
+  it("tracks the reachable Beads Dolt remote", () => {
+    expect(beadsConfig).toContain(
+      'sync.remote: "git+ssh://git@github.com/owezzy-tech/dev-to-mcp.git"',
+    );
+    expect(beadsConfig).not.toMatch(/placeholder|example\.com|YOUR_/i);
   });
 });
