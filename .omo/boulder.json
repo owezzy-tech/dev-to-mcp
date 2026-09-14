@@ -1,0 +1,14 @@
+{
+  "schema_version": 2,
+  "active_work_id": "dev-to-mcp-4tw-1",
+  "works": {
+    "dev-to-mcp-4tw-1": {
+      "work_id": "dev-to-mcp-4tw-1",
+      "active_plan": ".omo/plans/dev-to-mcp-4tw-1.md",
+      "plan_name": "dev-to-mcp-4tw-1",
+      "session_ids": ["codex:dev-to-mcp-4tw-1"],
+      "status": "completed",
+      "worktree_path": null
+    }
+  }
+}
