@@ -189,4 +189,20 @@ describe("delivery contracts", () => {
       true,
     );
   });
+
+  it("clears SEC-011 with a verified repository license", () => {
+    expect(license).toContain("MIT License");
+    expect(license).toContain("Copyright (c) 2026 Owen Adirah");
+    expect(readme).toContain("Distributed under the MIT License");
+    expect(readme).toContain("[LICENSE](LICENSE)");
+
+    expect(architectureBaseline).toMatch(
+      /\| SEC-011 \|[^\n]+dev-to-mcp-4tw\.1 \|/,
+    );
+    expect(architectureBaseline).not.toMatch(/\| SEC-011 \|[^\n]*Blocked/);
+    expect(architectureBaseline).not.toContain(
+      "no repository-level license grant is present",
+    );
+    expect(architectureBaseline).not.toContain("Current release blocker");
+  });
 });

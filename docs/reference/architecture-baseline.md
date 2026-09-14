@@ -14,7 +14,7 @@ This baseline preserves the public dev.to discovery MCP server. No authenticated
 
 The server currently consumes `PORT`, `NODE_ENV`, `SERVER_NAME`, `SERVER_VERSION`, and `LOG_LEVEL`. `compose.yml` supplies loopback-bound PostgreSQL with pgvector and Redis for future adapters only. Its `POSTGRES_PASSWORD=dev_to_mcp_local` value is local-only and must never be reused as a deployment secret. Future credentials stay server-side and out of logs/browser code. CI runs clean install, typecheck, lint, format check, tests, and build on Node 22.
 
-Upstream repository metadata reports no license: the GitHub license API returns HTTP 404 and no `LICENSE`, `COPYING`, or `NOTICE` file exists in the repository tree. The upstream `package.json` and README declare MIT, but that package-level metadata is not a repository-level license grant. Provenance and license verification therefore remain an SEC-011 release gate, enforced by the Docker publish workflow.
+Upstream provenance is verified as MIT: the upstream `package.json` declares `"license": "MIT"` and its README declared MIT, while the upstream GitHub license API still returns HTTP 404 only because no license file is present in its tree. This repository carries an explicit repository-level `LICENSE` (MIT, `Copyright (c) 2026 Owen Adirah`), and the GitHub license API reports `MIT` for this repository. SEC-011 is therefore cleared: the grant is explicit and redistributable, and the Docker publish workflow enforces it through the `test -f LICENSE` gate.
 
 ## SRS Must traceability
 
@@ -73,11 +73,11 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | SEC-008 | Structured logging and audit persistence redact secrets, tokens, and unnecessary sensitive content. | dev-to-mcp-4tw.3 | Deferred |
 | SEC-009 | Timeouts/retries, rate limits, and duplicate-publish protection span discovery, security, and workflows. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 / dev-to-mcp-4tw.5 | Deferred |
 | SEC-010 | The lockfile pins the MCP SDK and its production dependencies at patched releases, and the Docker workflow blocks known high-severity production dependency vulnerabilities. | dev-to-mcp-4tw.10 | Preserved |
-| SEC-011 | Upstream licensing is documented, but redistribution remains blocked until a repository-level grant is verified. | dev-to-mcp-4tw.1 | Blocked |
+| SEC-011 | Upstream MIT provenance is verified and this repository carries an explicit repository-level MIT `LICENSE`, so redistribution is permitted. | dev-to-mcp-4tw.1 | Preserved |
 
-## Current release blocker
+## Release gate status
 
-- Redistribution license: upstream package metadata says MIT, but no repository-level license grant is present. The Docker publish workflow requires a checked-in `LICENSE` and cannot publish until provenance is resolved.
+No release blockers remain. The redistribution license is verified through an explicit repository-level MIT `LICENSE`, and the production dependency audit is clean. The Docker publish workflow enforces both the `test -f LICENSE` license gate and the `npm audit --omit=dev --audit-level=high` dependency gate.
 
 ## Dependency posture
 
