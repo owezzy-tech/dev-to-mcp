@@ -26,6 +26,8 @@ const configSchema = z.object({
   GITHUB_OAUTH_SCOPES: z.string().default("read:user user:email"),
 
   MCP_BEARER_TOKEN: z.string().min(16).optional(),
+  FOREM_API_KEY: z.string().min(1).optional(),
+  FOREM_API_VERSION: z.string().default("v1"),
 
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(60),
   MAX_REQUEST_BYTES: z.coerce.number().int().positive().default(262_144),

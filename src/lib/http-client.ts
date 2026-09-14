@@ -3,13 +3,19 @@ import {
   MAX_HTTP_ATTEMPTS,
   RETRY_BACKOFF_MS,
   isRetryableError,
+  isRetryableMethod,
+  type HttpMethod,
 } from "../core/policies/retry.ts";
 import {
   HTTP_TIMEOUT_MS,
   systemClock,
   type Clock,
 } from "../core/policies/timeouts.ts";
-import { ApiError, RetryExhaustedError } from "../errors/api-errors.ts";
+import {
+  ApiError,
+  InternalError,
+  RetryExhaustedError,
+} from "../errors/api-errors.ts";
 import {
   mapHttpError,
   mapPayloadError,
@@ -35,6 +41,12 @@ export type HttpRequestContext = {
   readonly endpoint: string;
 };
 
+export type HttpRequestOptions = HttpRequestContext & {
+  readonly method?: HttpMethod;
+  readonly headers?: Readonly<Record<string, string>>;
+  readonly body?: unknown;
+};
+
 const defaultSleep: Sleep = async (delayMs) => {
   await new Promise<void>((resolve) => {
     setTimeout(resolve, delayMs);
@@ -56,16 +68,22 @@ export class HttpClient {
     };
   }
 
-  async getJson(url: URL, context: HttpRequestContext): Promise<unknown> {
+  getJson(url: URL, context: HttpRequestContext): Promise<unknown> {
+    return this.request(url, { ...context, method: "GET" });
+  }
+
+  async request(url: URL, options: HttpRequestOptions): Promise<unknown> {
+    const method = options.method ?? "GET";
     let lastError: ApiError | undefined;
+
     for (let attempt = 0; attempt < MAX_HTTP_ATTEMPTS; attempt += 1) {
       try {
-        return await this.executeAttempt(url, context, attempt);
+        return await this.executeAttempt(url, options, method, attempt);
       } catch (error) {
         if (!(error instanceof ApiError)) {
           throw error;
         }
-        if (!isRetryableError(error)) {
+        if (!isRetryableError(error) || !isRetryableMethod(method)) {
           throw error;
         }
         lastError = error;
@@ -78,8 +96,8 @@ export class HttpClient {
         }
         this.dependencies.logger.warn(
           {
-            correlationId: context.correlationId,
-            endpoint: context.endpoint,
+            correlationId: options.correlationId,
+            endpoint: options.endpoint,
             attempt: attempt + 1,
             delayMs,
             errorCode: error.code,
@@ -89,15 +107,16 @@ export class HttpClient {
         await this.dependencies.sleep(delayMs);
       }
     }
-    if (lastError === undefined) {
-      throw new UpstreamStateError();
-    }
-    throw new RetryExhaustedError(lastError);
+
+    throw lastError === undefined
+      ? new InternalError()
+      : new RetryExhaustedError(lastError);
   }
 
   private async executeAttempt(
     url: URL,
-    context: HttpRequestContext,
+    options: HttpRequestOptions,
+    method: HttpMethod,
     attempt: number,
   ): Promise<unknown> {
     const controller = new AbortController();
@@ -107,10 +126,22 @@ export class HttpClient {
       controller.abort();
     }, HTTP_TIMEOUT_MS);
 
+    const headers: Record<string, string> = {
+      accept: "application/json",
+      ...options.headers,
+    };
+    let body: string | undefined;
+    if (options.body !== undefined) {
+      headers["content-type"] = "application/json";
+      body = JSON.stringify(options.body);
+    }
+
     let response: Response;
     try {
       response = await this.dependencies.fetch(url, {
-        headers: { Accept: "application/json" },
+        method,
+        headers,
+        body,
         signal: controller.signal,
       });
     } catch (error) {
@@ -130,19 +161,15 @@ export class HttpClient {
       );
     }
 
+    if (response.status === 204) {
+      return null;
+    }
+
     try {
       return await response.json();
     } catch (error) {
       throw mapPayloadError(error);
     }
-  }
-}
-
-class UpstreamStateError extends ApiError {
-  readonly name = "UpstreamStateError";
-
-  constructor() {
-    super("INTERNAL_ERROR", "An internal error occurred.");
   }
 }
 

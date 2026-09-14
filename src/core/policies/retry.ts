@@ -8,6 +8,14 @@ import type { ApiError } from "../../errors/api-errors.ts";
 export const MAX_HTTP_ATTEMPTS = 3;
 export const RETRY_BACKOFF_MS = [100, 250] as const;
 
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+const RETRYABLE_METHODS: readonly HttpMethod[] = ["GET", "PUT", "DELETE"];
+
+export function isRetryableMethod(method: HttpMethod): boolean {
+  return RETRYABLE_METHODS.includes(method);
+}
+
 export function isRetryableError(error: ApiError): boolean {
   if (
     error instanceof UpstreamNetworkError ||

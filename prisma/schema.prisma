@@ -142,11 +142,13 @@ model Embedding {
 }
 
 model Draft {
-  id            String   @id @default(uuid())
+  id            String        @id @default(uuid())
   authorId      String
   title         String
   slug          String?
-  tags          String[] @default([])
+  tags          String[]      @default([])
+  state         WorkflowState @default(DRAFTING)
+  foremArticleId Int?
   currentVersionId String? @unique
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -215,6 +217,7 @@ model WorkflowRun {
   attempt       Int           @default(0)
   leaseUntil    DateTime?
   lastError     String?
+  result        Json?
   startedAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
