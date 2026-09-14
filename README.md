@@ -187,6 +187,8 @@ docker build -t dev-to-mcp .
 docker run --rm -p 3000:3000 dev-to-mcp
 ```
 
+The image is also built and published to Docker Hub by `.github/workflows/docker.yml` on every push to `main`. It is pushed to `${DOCKERHUB_NAMESPACE}/dev-to-mcp` (repository variable, default `owezzy`) with a `latest` tag and an immutable commit-SHA tag.
+
 The checked-in Compose file starts loopback-bound PostgreSQL/pgvector and Redis services reserved for future adapters. The current MCP server does not use those services and still runs separately.
 
 ```bash
@@ -233,13 +235,13 @@ Implemented:
 - [x] Read-only DEV.to public API client
 - [x] Article, user, tag, comment, and search tools
 - [x] Architecture and contributor documentation
+- [x] Container image build and publish workflow on `main`
 
 Planned and documented for future work:
 
 - [ ] Approval-aware DEV.to publishing workflow
 - [ ] Persistence adapters for future platform state
 - [ ] Retrieval, scheduling, and dashboard capabilities
-- [ ] Published container image and release automation
 
 See the [open issues](https://github.com/owezzy-tech/dev-to-mcp/issues) and [implementation plan](docs/explanation/implementation-plan.md) for proposed features and known gaps.
 
