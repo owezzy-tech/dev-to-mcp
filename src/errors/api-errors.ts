@@ -7,6 +7,7 @@ export const API_ERROR_CODES = {
   retryExhausted: "RETRY_EXHAUSTED",
   unauthorized: "UNAUTHORIZED",
   forbidden: "FORBIDDEN",
+  approvalInvalid: "APPROVAL_INVALID",
   internal: "INTERNAL_ERROR",
 } as const;
 
@@ -153,6 +154,17 @@ export class ForbiddenError extends ApiError {
     options: ApiErrorOptions = {},
   ) {
     super(API_ERROR_CODES.forbidden, publicMessage, options);
+  }
+}
+
+export class ApprovalInvalidError extends ApiError {
+  override readonly name = "ApprovalInvalidError";
+
+  constructor(
+    publicMessage = "No valid approval covers this draft version.",
+    options: ApiErrorOptions = {},
+  ) {
+    super(API_ERROR_CODES.approvalInvalid, publicMessage, options);
   }
 }
 
