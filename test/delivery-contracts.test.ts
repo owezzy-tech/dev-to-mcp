@@ -153,5 +153,7 @@ describe("delivery contracts", () => {
       'sync.remote: "git+ssh://git@github.com/owezzy-tech/dev-to-mcp.git"',
     );
     expect(beadsConfig).not.toMatch(/placeholder|example\.com|YOUR_/i);
+    expect(beadsConfig).toContain('issue-prefix: "dev-to-mcp"');
+    expect(beadsConfig).not.toMatch(/^#\s*issue-prefix:/m);
   });
 });
