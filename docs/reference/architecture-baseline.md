@@ -60,18 +60,18 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | FR-062 | Dashboard state exposes capabilities, actions, evidence, drafts, approvals, and audit events. | dev-to-mcp-4tw.8 | Deferred |
 | FR-063 | WebMCP calls update both structured results and visible UI state. | dev-to-mcp-4tw.8 | Deferred |
 | FR-064 | Unsupported browsers receive setup guidance without losing ordinary dashboard use. | dev-to-mcp-4tw.8 | Deferred |
-| FR-070 | Material workflow events persist sanitized actor, correlation, tool, result, and resource data. | dev-to-mcp-4tw.5 | Deferred |
-| FR-071 | Approval records persist approver, decision, timestamp, version/hash, and feedback. | dev-to-mcp-4tw.5 | Deferred |
-| FR-073 | Article workflows expose chronological audit history. | dev-to-mcp-4tw.5 | Deferred |
+| FR-070 | Material workflow events persist sanitized actor, correlation, tool, result, and resource data. | dev-to-mcp-4tw.5 | Implemented |
+| FR-071 | Approval records persist approver, decision, timestamp, version/hash, and feedback. | dev-to-mcp-4tw.5 | Implemented |
+| FR-073 | Article workflows expose chronological audit history. | dev-to-mcp-4tw.5 | Implemented |
 | SEC-001 | Secrets stay in server environment or managed secret storage and out of code, logs, prompts, and clients. | dev-to-mcp-4tw.3 | Deferred |
 | SEC-002 | Authenticated backend sessions and per-tool authorization belong in the security foundation. | dev-to-mcp-4tw.3 | Deferred |
 | SEC-003 | Read, draft-write, and publish permissions are distinct server-side capabilities. | dev-to-mcp-4tw.3 / dev-to-mcp-4tw.4 | Deferred |
 | SEC-004 | Existing arguments are schema-validated; size limits and sanitization remain hardening work. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 | Partial |
 | SEC-005 | Retrieval treats article bodies, comments, links, and tool content as hostile data. | dev-to-mcp-4tw.6 | Deferred |
 | SEC-006 | Retrieved instructions cannot trigger tools, disclosure, policy changes, approval, or publication. | dev-to-mcp-4tw.6 | Deferred |
-| SEC-007 | Server-side publish verification enforces approval, version/hash, actor, and policy. | dev-to-mcp-4tw.4 / dev-to-mcp-4tw.5 | Deferred |
+| SEC-007 | Server-side publish verification enforces approval, version/hash, actor, and lifecycle policy. | dev-to-mcp-4tw.4 / dev-to-mcp-4tw.5 | Implemented |
 | SEC-008 | Structured logging and audit persistence redact secrets, tokens, and unnecessary sensitive content. | dev-to-mcp-4tw.3 | Deferred |
-| SEC-009 | Timeouts/retries, rate limits, and duplicate-publish protection span discovery, security, and workflows. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 / dev-to-mcp-4tw.5 | Deferred |
+| SEC-009 | Timeouts/retries, rate limits, and duplicate-publish protection span discovery, security, and workflows. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 / dev-to-mcp-4tw.5 | Implemented |
 | SEC-010 | The lockfile pins the MCP SDK and its production dependencies at patched releases, and the Docker workflow blocks known high-severity production dependency vulnerabilities. | dev-to-mcp-4tw.10 | Preserved |
 | SEC-011 | Upstream MIT provenance is verified and this repository carries an explicit repository-level MIT `LICENSE`, so redistribution is permitted. | dev-to-mcp-4tw.1 | Preserved |
 

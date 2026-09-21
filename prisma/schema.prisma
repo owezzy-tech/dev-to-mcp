@@ -41,6 +41,13 @@ enum ActorType {
   SCHEDULER
 }
 
+enum NoPublishReason {
+  LOW_VALUE
+  DUPLICATE
+  INSUFFICIENT_EVIDENCE
+  POLICY
+}
+
 enum EvaluationKind {
   RETRIEVAL
   DRAFTING
@@ -64,6 +71,7 @@ model Author {
   drafts         Draft[]
   approvals      Approval[]
   workflowRuns   WorkflowRun[]
+  noPublishReports NoPublishReport[]
   auditEvents    AuditEvent[]
   evaluations    Evaluation[]
   sessions       DashboardSession[]
@@ -216,16 +224,57 @@ model WorkflowRun {
   state         WorkflowState
   attempt       Int           @default(0)
   leaseUntil    DateTime?
+  leasedBy      String?
+  correlationId String?
   lastError     String?
   result        Json?
   startedAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  draft  Draft? @relation(fields: [draftId], references: [id], onDelete: SetNull)
+  author      Author                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  draft       Draft?                @relation(fields: [draftId], references: [id], onDelete: SetNull)
+  transitions WorkflowTransition[]
+  noPublish   NoPublishReport?
 
   @@index([state, leaseUntil])
+  @@index([authorId, startedAt])
   @@map("workflow_runs")
+}
+
+model WorkflowTransition {
+  id            String        @id @default(uuid())
+  runId         String
+  draftId       String?
+  fromState     WorkflowState
+  toState       WorkflowState
+  actorType     ActorType
+  correlationId String
+  reason        String?
+  occurredAt    DateTime      @default(now())
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([draftId, occurredAt])
+  @@index([runId, occurredAt])
+  @@map("workflow_transitions")
+}
+
+model NoPublishReport {
+  id            String          @id @default(uuid())
+  authorId      String
+  runId         String          @unique
+  correlationId String
+  topic         String
+  reason        NoPublishReason
+  detail        String?
+  createdAt     DateTime        @default(now())
+
+  run WorkflowRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId, createdAt])
+  @@map("no_publish_reports")
 }
 
 model AuditEvent {

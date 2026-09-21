@@ -275,6 +275,55 @@ describe("publish approval verification", () => {
     ).rejects.toBeInstanceOf(InvalidInputError);
   });
 
+  it("rejects a publish while the draft is still awaiting approval", async () => {
+    const authorId = await newAuthor(["PUBLISH"]);
+    const { repository, draftId, versionId, contentHash } = await newDraft(
+      authorId,
+      "AWAITING_APPROVAL",
+    );
+    await repository.createApproval({
+      authorId,
+      draftVersionId: versionId,
+      decision: "APPROVED",
+      contentHash,
+      expiresAtMs: nowMs + 60_000,
+    });
+
+    await expect(
+      cases(repository).publishArticle(
+        authorId,
+        { draftId, idempotencyKey: "key-awaiting" },
+        "corr",
+      ),
+    ).rejects.toBeInstanceOf(InvalidInputError);
+  });
+
+  it("retries a publish from a recoverable FAILED state", async () => {
+    const authorId = await newAuthor(["PUBLISH"]);
+    const { repository, draftId, versionId, contentHash } = await newDraft(
+      authorId,
+      "FAILED",
+    );
+    await repository.createApproval({
+      authorId,
+      draftVersionId: versionId,
+      decision: "APPROVED",
+      contentHash,
+      expiresAtMs: nowMs + 60_000,
+    });
+    publishCalls.length = 0;
+
+    const outcome = await cases(repository).publishArticle(
+      authorId,
+      { draftId, idempotencyKey: "key-retry" },
+      "corr",
+    );
+
+    expect(outcome.article.published).toBe(true);
+    expect(publishCalls).toEqual([42]);
+    expect((await repository.getDraft(draftId))?.state).toBe("PUBLISHED");
+  });
+
   it("publishes the exact approved version and records the transition", async () => {
     const authorId = await newAuthor(["PUBLISH"]);
     const { repository, draftId, versionId, contentHash } =

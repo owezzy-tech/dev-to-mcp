@@ -14,6 +14,8 @@ const REQUIRED_TABLES = [
   "draft_snapshots",
   "approvals",
   "workflow_runs",
+  "workflow_transitions",
+  "no_publish_reports",
   "audit_events",
   "evaluations",
   "dashboard_sessions",
@@ -83,5 +85,43 @@ describe("prisma migrations", () => {
     expect(columns).toContain("draftVersionId");
     expect(columns).toContain("contentHash");
     expect(columns).toContain("expiresAt");
+  });
+
+  it("persists workflow transitions and lease metadata for recovery", async () => {
+    const transitionColumns = await prisma.$queryRaw<{ column_name: string }[]>`
+      SELECT column_name FROM information_schema.columns
+      WHERE table_name = 'workflow_transitions'
+    `;
+    const transitionNames = transitionColumns.map((row) => row.column_name);
+    for (const column of [
+      "runId",
+      "fromState",
+      "toState",
+      "actorType",
+      "correlationId",
+      "occurredAt",
+    ]) {
+      expect(transitionNames).toContain(column);
+    }
+
+    const runColumns = await prisma.$queryRaw<{ column_name: string }[]>`
+      SELECT column_name FROM information_schema.columns
+      WHERE table_name = 'workflow_runs'
+    `;
+    const runNames = runColumns.map((row) => row.column_name);
+    expect(runNames).toContain("leaseUntil");
+    expect(runNames).toContain("leasedBy");
+    expect(runNames).toContain("correlationId");
+  });
+
+  it("stores no-publish reports with a durable reason", async () => {
+    const rows = await prisma.$queryRaw<{ column_name: string }[]>`
+      SELECT column_name FROM information_schema.columns
+      WHERE table_name = 'no_publish_reports'
+    `;
+    const columns = rows.map((row) => row.column_name);
+    expect(columns).toContain("runId");
+    expect(columns).toContain("reason");
+    expect(columns).toContain("topic");
   });
 });

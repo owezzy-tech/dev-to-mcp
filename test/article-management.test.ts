@@ -11,7 +11,7 @@ import type {
 } from "../src/core/ports/forem-publisher.ts";
 import type { AppLogger } from "../src/core/ports/logger.ts";
 import { ArticleManagementUseCases } from "../src/core/use-cases/article-management.ts";
-import { ForbiddenError } from "../src/errors/api-errors.ts";
+import { ForbiddenError, InvalidInputError } from "../src/errors/api-errors.ts";
 
 import { cleanupAuthor, createTestAuthor } from "./helpers/article-fixtures.ts";
 import { DATABASE_URL } from "./helpers/infrastructure.ts";
@@ -169,6 +169,10 @@ describe("authenticated article management", () => {
       { title: "Typed boundaries", bodyMarkdown: "v1", tags: [] },
       "corr-create",
     );
+    // Walk the draft to the review gate before deciding on it.
+    const repository = new PrismaArticleRepository(prisma);
+    await repository.setDraftState(created.draft.id, "AWAITING_APPROVAL");
+
     const approval = await cases.recordApproval(
       authorId,
       { draftId: created.draft.id, decision: "APPROVED", ttlSeconds: 600 },
@@ -193,11 +197,51 @@ describe("authenticated article management", () => {
     expect(updated.draft.currentVersionId).toBe(updated.version?.id);
     expect(updated.draft.state).toBe("DRAFTING");
 
-    const repository = new PrismaArticleRepository(prisma);
     const stillValid =
       updated.version === undefined
         ? undefined
         : await repository.getApprovalForVersion(updated.version.id);
     expect(stillValid).toBeUndefined();
+  });
+
+  it("refuses to decide an approval outside the review state", async () => {
+    const authorId = await authorWith(["DRAFT_WRITE"]);
+    const cases = useCases(new FakeForemPublisher());
+
+    const created = await cases.createArticleDraft(
+      authorId,
+      { title: "Typed boundaries", bodyMarkdown: "v1", tags: [] },
+      "corr-create",
+    );
+
+    await expect(
+      cases.recordApproval(
+        authorId,
+        { draftId: created.draft.id, decision: "APPROVED", ttlSeconds: 600 },
+        "corr-approve",
+      ),
+    ).rejects.toBeInstanceOf(InvalidInputError);
+  });
+
+  it("allows a rejection from review and returns the draft to revision", async () => {
+    const authorId = await authorWith(["DRAFT_WRITE"]);
+    const cases = useCases(new FakeForemPublisher());
+    const created = await cases.createArticleDraft(
+      authorId,
+      { title: "Typed boundaries", bodyMarkdown: "v1", tags: [] },
+      "corr-create",
+    );
+    const repository = new PrismaArticleRepository(prisma);
+    await repository.setDraftState(created.draft.id, "AWAITING_APPROVAL");
+
+    await cases.recordApproval(
+      authorId,
+      { draftId: created.draft.id, decision: "REJECTED", ttlSeconds: 600 },
+      "corr-reject",
+    );
+
+    expect((await repository.getDraft(created.draft.id))?.state).toBe(
+      "REJECTED",
+    );
   });
 });
