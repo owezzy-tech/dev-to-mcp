@@ -29,11 +29,11 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | FR-003 | Existing discovery retrieves public profiles, tags, and threaded comments. | dev-to-mcp-4tw.2 | Preserved |
 | FR-004 | Stable typed Forem response normalization belongs in the shared core. | dev-to-mcp-4tw.2 | Deferred |
 | FR-005 | Pagination limits belong in shared schemas and public discovery handlers. | dev-to-mcp-4tw.2 | Deferred |
-| FR-010 | Semantic search is a core port backed by PostgreSQL/pgvector. | dev-to-mcp-4tw.6 | Deferred |
-| FR-011 | Hybrid ranking is core policy with evaluation fixtures. | dev-to-mcp-4tw.6 | Deferred |
-| FR-012 | Author-history comparison and duplicate detection use the retrieval port. | dev-to-mcp-4tw.6 | Deferred |
-| FR-013 | Content-gap results expose typed evidence and confidence. | dev-to-mcp-4tw.6 | Deferred |
-| FR-014 | Third-party content remains untrusted across retrieval and workflow boundaries. | dev-to-mcp-4tw.6 | Deferred |
+| FR-010 | Semantic search is a core port backed by PostgreSQL/pgvector. | dev-to-mcp-4tw.6 | Implemented |
+| FR-011 | Hybrid ranking is core policy with evaluation fixtures. | dev-to-mcp-4tw.6 | Implemented |
+| FR-012 | Author-history comparison and duplicate detection use the retrieval port. | dev-to-mcp-4tw.6 | Implemented |
+| FR-013 | Content-gap results expose typed evidence and confidence. | dev-to-mcp-4tw.6 | Implemented |
+| FR-014 | Third-party content remains untrusted across retrieval and workflow boundaries. | dev-to-mcp-4tw.6 | Implemented |
 | FR-020 | A server-side Forem adapter owns API-key authentication and version headers. | dev-to-mcp-4tw.4 | Deferred |
 | FR-021 | Authenticated article listing is a shared application handler. | dev-to-mcp-4tw.4 | Deferred |
 | FR-022 | Draft creation accepts the SRS article fields through the authenticated adapter. | dev-to-mcp-4tw.4 | Deferred |
@@ -67,8 +67,8 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | SEC-002 | Authenticated backend sessions and per-tool authorization belong in the security foundation. | dev-to-mcp-4tw.3 | Deferred |
 | SEC-003 | Read, draft-write, and publish permissions are distinct server-side capabilities. | dev-to-mcp-4tw.3 / dev-to-mcp-4tw.4 | Deferred |
 | SEC-004 | Existing arguments are schema-validated; size limits and sanitization remain hardening work. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 | Partial |
-| SEC-005 | Retrieval treats article bodies, comments, links, and tool content as hostile data. | dev-to-mcp-4tw.6 | Deferred |
-| SEC-006 | Retrieved instructions cannot trigger tools, disclosure, policy changes, approval, or publication. | dev-to-mcp-4tw.6 | Deferred |
+| SEC-005 | Retrieval treats article bodies, comments, links, and tool content as hostile data. | dev-to-mcp-4tw.6 | Implemented |
+| SEC-006 | Retrieved instructions cannot trigger tools, disclosure, policy changes, approval, or publication. | dev-to-mcp-4tw.6 | Implemented |
 | SEC-007 | Server-side publish verification enforces approval, version/hash, actor, and lifecycle policy. | dev-to-mcp-4tw.4 / dev-to-mcp-4tw.5 | Implemented |
 | SEC-008 | Structured logging and audit persistence redact secrets, tokens, and unnecessary sensitive content. | dev-to-mcp-4tw.3 | Deferred |
 | SEC-009 | Timeouts/retries, rate limits, and duplicate-publish protection span discovery, security, and workflows. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 / dev-to-mcp-4tw.5 | Implemented |
