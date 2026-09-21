@@ -38,6 +38,10 @@ const configSchema = z.object({
   TYPESAFE_API_KEY: z.string().min(1).optional(),
   TYPESAFE_MODEL: z.string().default("jev-latest"),
 
+  GENERATION_BASE_URL: optionalUrl,
+  GENERATION_API_KEY: z.string().min(1).optional(),
+  GENERATION_MODEL: z.string().default("gpt-4o-mini"),
+
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(60),
   MAX_REQUEST_BYTES: z.coerce.number().int().positive().default(262_144),
   DASHBOARD_SESSION_TTL_SECONDS: z.coerce

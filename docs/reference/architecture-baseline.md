@@ -41,12 +41,12 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | FR-024 | Publish verifies an unexpired approval for the exact draft version. | dev-to-mcp-4tw.4 | Deferred |
 | FR-025 | Publish rejects missing, rejected, expired, mismatched, or invalidated approvals. | dev-to-mcp-4tw.4 | Deferred |
 | FR-026 | Visibility-changing operations return confirmation and use idempotency where supported. | dev-to-mcp-4tw.4 | Deferred |
-| FR-030 | Idea generation returns audience, value, differentiation, and cited evidence. | dev-to-mcp-4tw.7 | Deferred |
-| FR-031 | Draft generation produces original Markdown from approved topics and style guidance. | dev-to-mcp-4tw.7 | Deferred |
-| FR-032 | Technical claims carry sources or explicit verification markers. | dev-to-mcp-4tw.7 | Deferred |
-| FR-033 | Drafting runs deterministic duplication, claim, link, context, and policy checks. | dev-to-mcp-4tw.7 | Deferred |
-| FR-034 | Revision, manual edit, approval, rejection, and discard are explicit transitions. | dev-to-mcp-4tw.7 | Deferred |
-| FR-035 | Core policy prohibits invented personal-experience claims. | dev-to-mcp-4tw.7 | Deferred |
+| FR-030 | Idea generation returns audience, value, differentiation, and cited evidence. | dev-to-mcp-4tw.7 | Implemented |
+| FR-031 | Draft generation produces original Markdown from approved topics and style guidance. | dev-to-mcp-4tw.7 | Implemented |
+| FR-032 | Technical claims carry sources or explicit verification markers. | dev-to-mcp-4tw.7 | Implemented |
+| FR-033 | Drafting runs deterministic duplication, claim, link, context, and policy checks. | dev-to-mcp-4tw.7 | Implemented |
+| FR-034 | Revision, manual edit, approval, rejection, and discard are explicit transitions. | dev-to-mcp-4tw.7 | Implemented |
+| FR-035 | Core policy prohibits invented personal-experience claims. | dev-to-mcp-4tw.7 | Implemented |
 | FR-040 | A scheduler invokes research and draft preparation workflows. | dev-to-mcp-4tw.9 | Deferred |
 | FR-041 | Scheduling never grants publication authority. | dev-to-mcp-4tw.9 | Deferred |
 | FR-042 | Weekly cadence and topic configuration are scheduling policy. | dev-to-mcp-4tw.9 | Deferred |

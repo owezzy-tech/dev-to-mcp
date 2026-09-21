@@ -78,7 +78,7 @@ export class PrismaArticleRepository implements ArticleRepository {
     tags: readonly string[];
     markdown: string;
     contentHash: string;
-    foremArticleId: number;
+    foremArticleId: number | null;
   }): Promise<{ draft: DraftSummary; version: DraftVersionSummary }> {
     return this.prisma.$transaction(async (tx) => {
       const draft = await tx.draft.create({
