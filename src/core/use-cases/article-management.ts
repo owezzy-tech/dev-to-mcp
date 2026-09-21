@@ -24,6 +24,10 @@ import {
   type Capability,
 } from "../policies/authorization.ts";
 import { hashContent } from "../policies/content-hash.ts";
+import {
+  assertPublishAuthority,
+  assertTransition,
+} from "../policies/lifecycle.ts";
 
 export interface UpdateDraftCommand extends UpdateDraftArticleInput {
   readonly draftId: string;
@@ -46,12 +50,9 @@ export interface PublishOutcome {
   readonly replayed: boolean;
 }
 
-type PublishableState = "APPROVED" | "AWAITING_APPROVAL";
+type PublishableState = "APPROVED" | "FAILED";
 
-const PUBLISHABLE_STATES: readonly DraftState[] = [
-  "APPROVED",
-  "AWAITING_APPROVAL",
-];
+const PUBLISHABLE_STATES: readonly DraftState[] = ["APPROVED", "FAILED"];
 
 function isPublishableState(state: DraftState): state is PublishableState {
   return PUBLISHABLE_STATES.includes(state);
@@ -177,6 +178,13 @@ export class ArticleManagementUseCases {
       throw new InvalidInputError("Draft has no version to approve.");
     }
 
+    const decisionState =
+      command.decision === "APPROVED" ? "APPROVED" : "REJECTED";
+    // Approval is a lifecycle decision: it is only reachable from review and
+    // only by the author. This keeps a rejected/approved draft from being
+    // re-decided without a fresh revision and review cycle.
+    assertTransition(draft.state, decisionState, "AUTHOR");
+
     const approval = await this.repository.createApproval({
       authorId,
       draftVersionId: version.id,
@@ -186,10 +194,7 @@ export class ArticleManagementUseCases {
       ...(command.feedback === undefined ? {} : { feedback: command.feedback }),
     });
 
-    await this.repository.setDraftState(
-      draft.id,
-      command.decision === "APPROVED" ? "APPROVED" : "REJECTED",
-    );
+    await this.repository.setDraftState(draft.id, decisionState);
 
     this.logger.info(
       { correlationId, draftId: draft.id, decision: command.decision },
@@ -231,6 +236,9 @@ export class ArticleManagementUseCases {
         `Draft cannot be published from state ${draft.state}.`,
       );
     }
+    // The lifecycle table is authoritative: an author may publish, a scheduler
+    // never may, even if every other check passes.
+    assertPublishAuthority(draft.state, "PUBLISHING", "AUTHOR");
 
     await this.repository.setDraftState(draft.id, "PUBLISHING");
     await this.repository.recordRun({
