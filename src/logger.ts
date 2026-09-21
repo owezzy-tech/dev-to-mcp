@@ -1,12 +1,56 @@
-import pino from "pino";
+import pino, { type DestinationStream, type LoggerOptions } from "pino";
 import { getConfig, isDevelopment } from "./config.ts";
 
-const config = getConfig();
+const REDACT_PATHS = [
+  "authorization",
+  "cookie",
+  "token",
+  "accessToken",
+  "access_token",
+  "apiKey",
+  "api_key",
+  "clientSecret",
+  "client_secret",
+  "password",
+  "headers.authorization",
+  "headers.cookie",
+  "req.headers.authorization",
+  "req.headers.cookie",
+  "*.authorization",
+  "*.cookie",
+  "*.token",
+  "*.accessToken",
+  "*.access_token",
+  "*.apiKey",
+  "*.api_key",
+  "*.clientSecret",
+  "*.client_secret",
+  "*.password",
+];
 
-export const logger = pino({
-  level: config.LOG_LEVEL,
+export function createLogger(destination?: DestinationStream) {
+  const config = getConfig();
+  const options: LoggerOptions = {
+    level: config.LOG_LEVEL,
+    base: {
+      service: config.SERVER_NAME,
+      version: config.SERVER_VERSION,
+      environment: config.NODE_ENV,
+    },
+    formatters: {
+      level: (label) => ({ level: label }),
+    },
+    redact: {
+      paths: REDACT_PATHS,
+      censor: "[REDACTED]",
+    },
+  };
 
-  transport: isDevelopment()
+  if (destination !== undefined) {
+    return pino(options, destination);
+  }
+
+  const transport = isDevelopment()
     ? {
         target: "pino-pretty",
         options: {
@@ -15,15 +59,9 @@ export const logger = pino({
           ignore: "pid,hostname",
         },
       }
-    : undefined,
+    : undefined;
 
-  base: {
-    service: config.SERVER_NAME,
-    version: config.SERVER_VERSION,
-    environment: config.NODE_ENV,
-  },
+  return pino({ ...options, transport });
+}
 
-  formatters: {
-    level: (label) => ({ level: label }),
-  },
-});
+export const logger = createLogger();

@@ -21,6 +21,10 @@ const architectureBaseline = readFileSync(
   "docs/reference/architecture-baseline.md",
   "utf8",
 );
+const beadsConfig = readFileSync(".beads/config.yaml", "utf8");
+const packageManifest = readFileSync("package.json", "utf8");
+const packageLock = readFileSync("package-lock.json", "utf8");
+const readmeTemplate = readFileSync("BLANK_README.md", "utf8");
 
 const mustRequirementIds = [
   "FR-001",
@@ -144,6 +148,79 @@ describe("delivery contracts", () => {
     expect(docsIndex).toContain("how-to/connect-an-mcp-client.md");
     expect(contributorGuide).toContain(
       "npm audit --omit=dev --audit-level=high",
+    );
+  });
+
+  it("tracks the reachable Beads Dolt remote", () => {
+    expect(beadsConfig).toContain(
+      'sync.remote: "git+ssh://git@github.com/owezzy-tech/dev-to-mcp.git"',
+    );
+    expect(beadsConfig).not.toMatch(/placeholder|example\.com|YOUR_/i);
+    expect(beadsConfig).toContain('issue-prefix: "dev-to-mcp"');
+    expect(beadsConfig).not.toMatch(/^#\s*issue-prefix:/m);
+  });
+
+  it("pins the MCP SDK above the SEC-010 advisory range", () => {
+    const manifest = JSON.parse(packageManifest) as {
+      dependencies: Record<string, string>;
+    };
+    const [floorMajor, floorMinor] = (
+      manifest.dependencies["@modelcontextprotocol/sdk"] ?? ""
+    )
+      .replace(/^[^\d]*/, "")
+      .split(".")
+      .map(Number);
+
+    expect([floorMajor, floorMinor]).toEqual(
+      expect.arrayContaining([expect.any(Number)]),
+    );
+    expect(floorMajor > 1 || (floorMajor === 1 && floorMinor >= 26)).toBe(true);
+
+    const lock = JSON.parse(packageLock) as {
+      packages: Record<string, { version?: string }>;
+    };
+    const [lockedMajor, lockedMinor] = (
+      lock.packages["node_modules/@modelcontextprotocol/sdk"]?.version ??
+      "0.0.0"
+    )
+      .split(".")
+      .map(Number);
+
+    expect(lockedMajor > 1 || (lockedMajor === 1 && lockedMinor >= 26)).toBe(
+      true,
+    );
+  });
+
+  it("clears SEC-011 with a verified repository license", () => {
+    expect(license).toContain("MIT License");
+    expect(license).toContain("Copyright (c) 2026 Owen Adirah");
+    expect(readme).toContain("Distributed under the MIT License");
+    expect(readme).toContain("[LICENSE](LICENSE)");
+
+    expect(architectureBaseline).toMatch(
+      /\| SEC-011 \|[^\n]+dev-to-mcp-4tw\.1 \|/,
+    );
+    expect(architectureBaseline).not.toMatch(/\| SEC-011 \|[^\n]*Blocked/);
+    expect(architectureBaseline).not.toContain(
+      "no repository-level license grant is present",
+    );
+    expect(architectureBaseline).not.toContain("Current release blocker");
+  });
+
+  it("follows the blank README template without unresolved placeholders", () => {
+    const headings = (text: string) =>
+      text
+        .split("\n")
+        .filter((line) => /^#{2,3} /.test(line))
+        .map((line) => line.trim());
+
+    for (const heading of headings(readmeTemplate)) {
+      expect(headings(readme)).toContain(heading);
+    }
+
+    expect(readme).toContain("<summary>Table of Contents</summary>");
+    expect(readme).not.toMatch(
+      /github_username|repo_name|project_title|project_description|images\/logo\.png|YOUR_|ENTER YOUR|example\.com|LICENSE\.txt/i,
     );
   });
 });

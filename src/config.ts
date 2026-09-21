@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+const optionalUrl = z
+  .string()
+  .min(1)
+  .optional()
+  .refine(
+    (value) => value === undefined || URL.canParse(value),
+    "must be a valid URL",
+  );
+
 const configSchema = z.object({
   PORT: z.coerce.number().default(3000),
   NODE_ENV: z
@@ -8,22 +17,45 @@ const configSchema = z.object({
   SERVER_NAME: z.string().default("dev-to-mcp"),
   SERVER_VERSION: z.string().default("1.0.0"),
   LOG_LEVEL: z.enum(["error", "warn", "info", "debug"]).default("info"),
+
+  DATABASE_URL: optionalUrl,
+  REDIS_URL: optionalUrl,
+
+  GITHUB_CLIENT_ID: z.string().optional(),
+  GITHUB_CLIENT_SECRET: z.string().optional(),
+  GITHUB_OAUTH_SCOPES: z.string().default("read:user user:email"),
+
+  MCP_BEARER_TOKEN: z.string().min(16).optional(),
+  FOREM_API_KEY: z.string().min(1).optional(),
+  FOREM_API_VERSION: z.string().default("v1"),
+
+  RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(60),
+  MAX_REQUEST_BYTES: z.coerce.number().int().positive().default(262_144),
+  DASHBOARD_SESSION_TTL_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(3_600),
 });
 
 export type Config = z.infer<typeof configSchema>;
 
-let config: Config;
+let cached: Config | undefined;
 
 export function getConfig(): Config {
-  if (!config) {
-    try {
-      config = configSchema.parse(process.env);
-    } catch (error) {
-      console.error("❌ Invalid environment configuration:", error);
+  if (cached === undefined) {
+    const parsed = configSchema.safeParse(process.env);
+    if (!parsed.success) {
+      console.error("❌ Invalid environment configuration:", parsed.error);
       process.exit(1);
     }
+    cached = parsed.data;
   }
-  return config;
+  return cached;
+}
+
+export function resetConfigCache(): void {
+  cached = undefined;
 }
 
 export function isProduction(): boolean {

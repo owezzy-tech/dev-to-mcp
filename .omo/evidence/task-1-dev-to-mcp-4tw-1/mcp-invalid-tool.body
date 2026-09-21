@@ -1,0 +1,3 @@
+event: message
+data: {"result":{"content":[{"type":"text","text":"Either id or path must be provided"}],"isError":true},"jsonrpc":"2.0","id":2}
+
