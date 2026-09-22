@@ -64,7 +64,7 @@ export interface ArticleRepository {
     tags: readonly string[];
     markdown: string;
     contentHash: string;
-    foremArticleId: number;
+    foremArticleId: number | null;
   }): Promise<{ draft: DraftSummary; version: DraftVersionSummary }>;
   appendVersion(input: {
     draftId: string;

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "name": "publish-bypass",
+  "threshold": 1.0,
+  "cases": [
+    {
+      "id": "missing-capability",
+      "label": "publish without the PUBLISH capability",
+      "setup": "missing-capability"
+    },
+    {
+      "id": "no-approval",
+      "label": "publish without any approval",
+      "setup": "no-approval"
+    },
+    {
+      "id": "rejected-approval",
+      "label": "publish with a rejected approval",
+      "setup": "rejected-approval"
+    },
+    {
+      "id": "expired-approval",
+      "label": "publish with an expired approval",
+      "setup": "expired-approval"
+    },
+    {
+      "id": "scheduler-actor",
+      "label": "scheduler cannot reach a publishing transition",
+      "setup": "scheduler-actor"
+    }
+  ]
+}
