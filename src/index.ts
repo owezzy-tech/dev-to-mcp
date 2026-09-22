@@ -23,11 +23,17 @@ import { SessionRegistry } from "./mcp/session-registry.ts";
 import { createToolHandlers } from "./mcp/tool-handlers.ts";
 import { composeApp } from "./rest/compose.ts";
 import { buildRestRouter } from "./rest/routes.ts";
+import { createMetricsRegistry } from "./lib/metrics.ts";
 
 const config = getConfig();
+const metrics = createMetricsRegistry();
 
 const app = express();
 app.use(express.json());
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  metrics.incrementRequest(normalizeCorrelationId(req.get("x-correlation-id")));
+  next();
+});
 
 const httpClient = new HttpClient({ logger });
 const foremClient = new ForemApiClient(httpClient);
@@ -41,6 +47,22 @@ const sessions = new SessionRegistry();
 
 app.get("/mcp", (_req: Request, res: Response) => {
   res.json(MCP_METADATA);
+});
+
+app.get("/healthz", (_req: Request, res: Response) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.get("/readyz", (_req: Request, res: Response) => {
+  const ready = config.DATABASE_URL !== undefined;
+  res.status(ready ? 200 : 503).json({ ready });
+});
+
+app.get("/metrics", (_req: Request, res: Response) => {
+  res
+    .status(200)
+    .setHeader("content-type", "text/plain; version=0.0.4")
+    .send(metrics.render());
 });
 
 app.post("/mcp", async (req: Request, res: Response) => {

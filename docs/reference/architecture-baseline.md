@@ -9,7 +9,7 @@ This baseline preserves the public dev.to discovery MCP server. No authenticated
 | Shared core | `src/core` owns transport-independent typed models, policies, and ports; adapters may depend on it, never the reverse. |
 | Thin adapters | `src/mcp` owns Streamable HTTP adaptation; `src/webmcp` owns browser adaptation only. Neither owns business policy or credentials. |
 | Explicit workflows | `src/workflows` coordinates named, approval-aware use cases through core ports; it has no scheduler or autonomous publish path. |
-| Evaluation gate | `src/evals` owns fixtures, hostile cases, rubrics, and release thresholds; it is not runtime code. |
+| Evaluation gate | `src/evals` owns versioned datasets, graders, and release thresholds; CI blocks when a critical threshold is not met. |
 | Existing public contract | `src/index.ts` retains its six tool names, titles, descriptions, complete input schemas, read/open-world annotations, and `GET /mcp` response. `test/mcp.characterization.test.ts` guards the wire contract, and `test/utils.test.ts` guards the text result envelope. |
 
 The server currently consumes `PORT`, `NODE_ENV`, `SERVER_NAME`, `SERVER_VERSION`, and `LOG_LEVEL`. `compose.yml` supplies loopback-bound PostgreSQL with pgvector and Redis for future adapters only. Its `POSTGRES_PASSWORD=dev_to_mcp_local` value is local-only and must never be reused as a deployment secret. Future credentials stay server-side and out of logs/browser code. CI runs clean install, typecheck, lint, format check, tests, and build on Node 22.
@@ -77,10 +77,23 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 
 ## Release gate status
 
-No release blockers remain. The redistribution license is verified through an explicit repository-level MIT `LICENSE`, and the production dependency audit is clean. The Docker publish workflow enforces both the `test -f LICENSE` license gate and the `npm audit --omit=dev --audit-level=high` dependency gate.
+CI blocks on three critical safety evaluations — publish-bypass,
+approval-mismatch, and prompt-injection — each with a `1.0` threshold. The
+versioned datasets and graders live in `src/evals`, run via `npm run eval`, and
+report each grader's pass rate against its threshold. The Docker publish
+workflow additionally enforces the `test -f LICENSE` license gate, the
+`npm audit --omit=dev --audit-level=high` dependency gate, and a container
+smoke test that boots the image and probes `/healthz`.
 
 ## Dependency posture
 
 `npm audit --omit=dev --audit-level=high` reports zero vulnerabilities. All five production advisories recorded by SEC-010 (`@modelcontextprotocol/sdk`, `ajv`, `body-parser`, `path-to-regexp`, `qs`) are resolved, and the lockfile pins `@modelcontextprotocol/sdk@1.30.0`. The remaining audit findings are dev-only (Vite, Vitest, ESLint, and their `minimatch`/`esbuild` transitives), fall outside the Docker production audit gate, and require a major toolchain upgrade tracked as separate work.
 
-Before any future workflow ships, `src/evals` must contain normal, ambiguous, hostile-content, failed-upstream, approval-mismatch, and duplicate-topic regression data plus explicit correctness, safety, evidence, and duplicate-detection thresholds.
+## Observability
+
+Logs (Pino), the `x-correlation-id` response header, audit events, and the
+Prometheus request counter all carry the same correlation id, so an operator
+can join a request across signals. `/healthz` reports liveness, `/readyz`
+readiness (gated on `DATABASE_URL`), and `/metrics` exposes Prometheus text
+format. OpenTelemetry tracing and a LangSmith exporter remain optional and
+configurable, and neither blocks the core publishing workflow.
