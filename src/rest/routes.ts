@@ -12,8 +12,12 @@ function wrap(handler: Handler) {
     res.setHeader("x-correlation-id", correlationId);
     try {
       const body = await handler(req, res);
-      if (body !== undefined && !res.headersSent) {
-        res.json(body);
+      if (!res.headersSent) {
+        if (body === undefined) {
+          res.status(204).end();
+        } else {
+          res.json(body);
+        }
       }
     } catch (error) {
       sendError(res, error, correlationId);
@@ -327,7 +331,73 @@ export function buildRestRouter(deps: AppDependencies): Router {
     wrap((req) => deps.workflows.transitionHistory(String(req.params.id))),
   );
 
+  // ── Scheduling ───────────────────────────────────────────────────────
+  router.post(
+    "/scheduling/trigger",
+    auth,
+    wrap((req, res) =>
+      deps.scheduling.triggerRun(authorOf(res), {
+        correlationId: currentCorrelation(req),
+        idempotencyKey: String(req.body.idempotencyKey ?? ""),
+      }),
+    ),
+  );
+
+  router.get(
+    "/scheduling/status",
+    auth,
+    wrap(async (_req, res) => {
+      const authorId = authorOf(res);
+      const [due, topics] = await Promise.all([
+        deps.scheduling.shouldRun(authorId),
+        deps.scheduling.getTopics(authorId),
+      ]);
+      return { due, topics };
+    }),
+  );
+
+  router.get(
+    "/scheduling/topics",
+    auth,
+    wrap((_req, res) => deps.scheduling.getTopics(authorOf(res))),
+  );
+
+  router.put(
+    "/scheduling/topics",
+    auth,
+    wrap((req, res) =>
+      deps.scheduling.setTopics(authorOf(res), req.body.topics ?? []),
+    ),
+  );
+
+  router.post(
+    "/scheduling/no-topic",
+    auth,
+    wrap((req, res) =>
+      deps.scheduling.recordNoTopic(authorOf(res), {
+        runId: String(req.body.runId ?? ""),
+        correlationId: currentCorrelation(req),
+        topic: String(req.body.topic ?? ""),
+        reason: normalizeNoTopicReason(req.body.reason),
+      }),
+    ),
+  );
+
   return router;
+}
+
+function normalizeNoTopicReason(
+  value: unknown,
+): "LOW_VALUE" | "DUPLICATE" | "INSUFFICIENT_EVIDENCE" | "POLICY" {
+  if (
+    value === "LOW_VALUE" ||
+    value === "DUPLICATE" ||
+    value === "INSUFFICIENT_EVIDENCE" ||
+    value === "POLICY"
+  ) {
+    return value;
+  }
+  return "LOW_VALUE";
 }
 
 function currentCorrelation(req: Request): string {
