@@ -19,6 +19,8 @@ import { logger } from "./logger.ts";
 import { MCP_METADATA, buildMcpServer } from "./mcp/server.ts";
 import { SessionRegistry } from "./mcp/session-registry.ts";
 import { createToolHandlers } from "./mcp/tool-handlers.ts";
+import { composeApp } from "./rest/compose.ts";
+import { buildRestRouter } from "./rest/routes.ts";
 
 const config = getConfig();
 
@@ -112,6 +114,14 @@ app.use(
 );
 
 const port = config.PORT;
+
+// Mount the versioned REST API when persistence is configured; the read-only
+// MCP server remains available without a database.
+if (config.DATABASE_URL !== undefined) {
+  const deps = composeApp(config, logger);
+  app.use("/v1", buildRestRouter(deps));
+  logger.info({}, "Dev.to REST API mounted at /v1");
+}
 
 app.listen(port, () => {
   logger.info(

@@ -23,7 +23,8 @@ import {
   DUPLICATION_THRESHOLD,
 } from "../policies/duplication.ts";
 import { bound, rankHybrid, type RankedResult } from "../policies/ranking.ts";
-import { untrusted, UntrustedText } from "../policies/untrusted-content.ts";
+import { untrusted } from "../policies/untrusted-content.ts";
+import type { UntrustedText } from "../policies/untrusted-content.ts";
 
 export const MAX_SEARCH_LIMIT = 100;
 export const DEFAULT_SEARCH_LIMIT = 20;
