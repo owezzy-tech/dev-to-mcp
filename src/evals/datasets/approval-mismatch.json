@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "name": "approval-mismatch",
+  "threshold": 1.0,
+  "cases": [
+    {
+      "id": "version-mismatch",
+      "label": "approval bound to a different draft version",
+      "setup": "version-mismatch"
+    },
+    {
+      "id": "hash-mismatch",
+      "label": "approval hash differs from the current content",
+      "setup": "hash-mismatch"
+    },
+    {
+      "id": "author-mismatch",
+      "label": "approval recorded by a different author",
+      "setup": "author-mismatch"
+    }
+  ]
+}

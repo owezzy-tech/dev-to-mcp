@@ -49,6 +49,7 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run test:ci
+      - run: npm run eval
       - run: npm run build
       - run: cd dashboard && npm ci
       - run: cd dashboard && npm run build
