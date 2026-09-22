@@ -1,0 +1,79 @@
+<header>
+  <h1>DEV.to Publishing Dashboard</h1>
+
+  <p
+    class="banner"
+    role="status"
+    [class.banner--ok]="webmcpSupported()"
+    [class.banner--warn]="!webmcpSupported()"
+  >
+    {{ webmcpMessage() }}
+    @if (!webmcpSupported()) {
+      Your browser does not expose WebMCP. The dashboard remains fully usable;
+      use a WebMCP-compatible browser to expose tools to an agent.
+    }
+  </p>
+</header>
+
+<main>
+  <section aria-labelledby="session-heading">
+    <h2 id="session-heading">Session</h2>
+    <label for="session-token">Session token</label>
+    <input
+      id="session-token"
+      type="password"
+      placeholder="Paste a dashboard session token"
+      #tokenInput
+    />
+    <button type="button" (click)="signIn(tokenInput.value)">Sign in</button>
+  </section>
+
+  <section aria-labelledby="capabilities-heading">
+    <h2 id="capabilities-heading">Capabilities</h2>
+    <ul>
+      @for (capability of capabilities(); track capability) {
+        <li>{{ capability }}</li>
+      } @empty {
+        <li>Sign in to load capabilities.</li>
+      }
+    </ul>
+  </section>
+
+  <section aria-labelledby="draft-heading">
+    <h2 id="draft-heading">Draft</h2>
+    <label for="draft-markdown">Markdown</label>
+    <textarea id="draft-markdown" #draftInput rows="6"></textarea>
+    <button type="button" (click)="persistDraft(draftInput.value)">
+      Save draft
+    </button>
+    <button type="button" (click)="approveDraft()" [disabled]="draftId() === undefined">
+      Approve
+    </button>
+    <p aria-live="polite">State: {{ draftState() }}</p>
+  </section>
+
+  <section aria-labelledby="actions-heading">
+    <h2 id="actions-heading">Action log</h2>
+    <ol aria-live="polite">
+      @for (action of actions(); track action) {
+        <li>{{ action.tool }} — {{ action.at }}</li>
+      } @empty {
+        <li>No actions yet.</li>
+      }
+    </ol>
+  </section>
+
+  <section aria-labelledby="audit-heading">
+    <h2 id="audit-heading">Audit history</h2>
+    <button type="button" (click)="loadAudit()" [disabled]="draftId() === undefined">
+      Refresh
+    </button>
+    <ul>
+      @for (entry of audit(); track entry) {
+        <li>{{ entry.tool }}</li>
+      } @empty {
+        <li>No audit events.</li>
+      }
+    </ul>
+  </section>
+</main>

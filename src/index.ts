@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import express, {
@@ -121,6 +123,27 @@ if (config.DATABASE_URL !== undefined) {
   const deps = composeApp(config, logger);
   app.use("/v1", buildRestRouter(deps));
   logger.info({}, "Dev.to REST API mounted at /v1");
+}
+
+// Serve the pre-built Angular dashboard when its bundle is present.
+const dashboardRoot = path.resolve(
+  process.cwd(),
+  "dashboard/dist/dashboard/browser",
+);
+if (existsSync(dashboardRoot)) {
+  app.use(express.static(dashboardRoot));
+  app.use((req: Request, res: Response, next: NextFunction): void => {
+    if (
+      req.method !== "GET" ||
+      req.path.startsWith("/mcp") ||
+      req.path.startsWith("/v1")
+    ) {
+      next();
+      return;
+    }
+    res.sendFile(path.join(dashboardRoot, "index.html"));
+  });
+  logger.info({}, "Dev.to dashboard served at /");
 }
 
 app.listen(port, () => {

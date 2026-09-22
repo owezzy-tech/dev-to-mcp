@@ -55,11 +55,11 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | FR-051 | Existing public tools are read/open-world annotated; write-tool separation and annotations remain authenticated adapter work. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.4 | Partial |
 | FR-052 | MCP session expiration and cleanup belong in the MCP adapter. | dev-to-mcp-4tw.2 | Deferred |
 | FR-053 | Safe actionable error normalization belongs in shared errors and adapter mapping. | dev-to-mcp-4tw.2 | Deferred |
-| FR-060 | Top-level WebMCP registration belongs only in the dashboard adapter. | dev-to-mcp-4tw.8 | Deferred |
-| FR-061 | Privileged WebMCP tools call authenticated backend handlers; secrets remain server-side. | dev-to-mcp-4tw.8 | Deferred |
-| FR-062 | Dashboard state exposes capabilities, actions, evidence, drafts, approvals, and audit events. | dev-to-mcp-4tw.8 | Deferred |
-| FR-063 | WebMCP calls update both structured results and visible UI state. | dev-to-mcp-4tw.8 | Deferred |
-| FR-064 | Unsupported browsers receive setup guidance without losing ordinary dashboard use. | dev-to-mcp-4tw.8 | Deferred |
+| FR-060 | Top-level WebMCP registration belongs only in the dashboard adapter. | dev-to-mcp-4tw.8 | Implemented |
+| FR-061 | Privileged WebMCP tools call authenticated backend handlers; secrets remain server-side. | dev-to-mcp-4tw.8 | Implemented |
+| FR-062 | Dashboard state exposes capabilities, actions, evidence, drafts, approvals, and audit events. | dev-to-mcp-4tw.8 | Implemented |
+| FR-063 | WebMCP calls update both structured results and visible UI state. | dev-to-mcp-4tw.8 | Implemented |
+| FR-064 | Unsupported browsers receive setup guidance without losing ordinary dashboard use. | dev-to-mcp-4tw.8 | Implemented |
 | FR-070 | Material workflow events persist sanitized actor, correlation, tool, result, and resource data. | dev-to-mcp-4tw.5 | Implemented |
 | FR-071 | Approval records persist approver, decision, timestamp, version/hash, and feedback. | dev-to-mcp-4tw.5 | Implemented |
 | FR-073 | Article workflows expose chronological audit history. | dev-to-mcp-4tw.5 | Implemented |
