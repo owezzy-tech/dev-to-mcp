@@ -8,6 +8,7 @@ export const API_ERROR_CODES = {
   unauthorized: "UNAUTHORIZED",
   forbidden: "FORBIDDEN",
   approvalInvalid: "APPROVAL_INVALID",
+  draftQuality: "DRAFT_QUALITY",
   internal: "INTERNAL_ERROR",
 } as const;
 
@@ -165,6 +166,17 @@ export class ApprovalInvalidError extends ApiError {
     options: ApiErrorOptions = {},
   ) {
     super(API_ERROR_CODES.approvalInvalid, publicMessage, options);
+  }
+}
+
+export class DraftQualityError extends ApiError {
+  override readonly name = "DraftQualityError";
+
+  constructor(
+    publicMessage = "The draft failed quality checks and cannot proceed.",
+    options: ApiErrorOptions = {},
+  ) {
+    super(API_ERROR_CODES.draftQuality, publicMessage, options);
   }
 }
 

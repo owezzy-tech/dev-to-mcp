@@ -1,7 +1,11 @@
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import { resolve } from "path";
 
 export default defineConfig(({ command }) => ({
+  test: {
+    include: ["test/**/*.test.ts"],
+    exclude: ["dashboard/**", "node_modules/**", "dist/**"],
+  },
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),

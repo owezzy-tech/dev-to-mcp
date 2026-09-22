@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import express, {
@@ -19,11 +21,19 @@ import { logger } from "./logger.ts";
 import { MCP_METADATA, buildMcpServer } from "./mcp/server.ts";
 import { SessionRegistry } from "./mcp/session-registry.ts";
 import { createToolHandlers } from "./mcp/tool-handlers.ts";
+import { composeApp } from "./rest/compose.ts";
+import { buildRestRouter } from "./rest/routes.ts";
+import { createMetricsRegistry } from "./lib/metrics.ts";
 
 const config = getConfig();
+const metrics = createMetricsRegistry();
 
 const app = express();
 app.use(express.json());
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  metrics.incrementRequest(normalizeCorrelationId(req.get("x-correlation-id")));
+  next();
+});
 
 const httpClient = new HttpClient({ logger });
 const foremClient = new ForemApiClient(httpClient);
@@ -37,6 +47,22 @@ const sessions = new SessionRegistry();
 
 app.get("/mcp", (_req: Request, res: Response) => {
   res.json(MCP_METADATA);
+});
+
+app.get("/healthz", (_req: Request, res: Response) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.get("/readyz", (_req: Request, res: Response) => {
+  const ready = config.DATABASE_URL !== undefined;
+  res.status(ready ? 200 : 503).json({ ready });
+});
+
+app.get("/metrics", (_req: Request, res: Response) => {
+  res
+    .status(200)
+    .setHeader("content-type", "text/plain; version=0.0.4")
+    .send(metrics.render());
 });
 
 app.post("/mcp", async (req: Request, res: Response) => {
@@ -112,6 +138,35 @@ app.use(
 );
 
 const port = config.PORT;
+
+// Mount the versioned REST API when persistence is configured; the read-only
+// MCP server remains available without a database.
+if (config.DATABASE_URL !== undefined) {
+  const deps = composeApp(config, logger);
+  app.use("/v1", buildRestRouter(deps));
+  logger.info({}, "Dev.to REST API mounted at /v1");
+}
+
+// Serve the pre-built Angular dashboard when its bundle is present.
+const dashboardRoot = path.resolve(
+  process.cwd(),
+  "dashboard/dist/dashboard/browser",
+);
+if (existsSync(dashboardRoot)) {
+  app.use(express.static(dashboardRoot));
+  app.use((req: Request, res: Response, next: NextFunction): void => {
+    if (
+      req.method !== "GET" ||
+      req.path.startsWith("/mcp") ||
+      req.path.startsWith("/v1")
+    ) {
+      next();
+      return;
+    }
+    res.sendFile(path.join(dashboardRoot, "index.html"));
+  });
+  logger.info({}, "Dev.to dashboard served at /");
+}
 
 app.listen(port, () => {
   logger.info(
