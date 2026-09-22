@@ -42,6 +42,10 @@ import { WorkflowEngine } from "../core/use-cases/workflow-engine.ts";
 import { HttpClient } from "../lib/http-client.ts";
 import type { AuthorResolver } from "./auth.ts";
 import { InternalError } from "../errors/api-errors.ts";
+import { ConsoleNotificationProvider } from "../adapters/notifications/console.ts";
+import { PrismaSchedulingRepository } from "../adapters/persistence/prisma-scheduling-repository.ts";
+import type { NotificationProvider } from "../core/ports/notification-provider.ts";
+import { SchedulingUseCases } from "../core/use-cases/scheduling.ts";
 
 /** Everything the REST (and MCP) adapters need to serve shared handlers. */
 export interface AppDependencies {
@@ -52,6 +56,7 @@ export interface AppDependencies {
   readonly retrieval: RetrievalUseCases;
   readonly drafting: DraftingUseCases;
   readonly workflows: WorkflowEngine;
+  readonly scheduling: SchedulingUseCases;
   readonly repository: ArticleRepository;
   readonly retrievalRepository: RetrievalRepository;
   readonly workflowRepository: WorkflowRepository;
@@ -150,6 +155,17 @@ export function composeApp(config: Config, logger: AppLogger): AppDependencies {
     workerId: `rest-${randomUUID()}`,
   });
 
+  const schedulingRepository = new PrismaSchedulingRepository(prisma);
+  const notifications: NotificationProvider = new ConsoleNotificationProvider(
+    logger,
+  );
+  const scheduling = new SchedulingUseCases(
+    workflows,
+    schedulingRepository,
+    notifications,
+    logger,
+  );
+
   const authorResolver: AuthorResolver = buildAuthorResolver(prisma, redis);
 
   return {
@@ -160,6 +176,7 @@ export function composeApp(config: Config, logger: AppLogger): AppDependencies {
     retrieval,
     drafting,
     workflows,
+    scheduling,
     repository,
     retrievalRepository,
     workflowRepository,

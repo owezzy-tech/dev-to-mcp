@@ -137,4 +137,35 @@ describe("versioned REST API", () => {
     const approval = (await approve.json()) as { decision: string };
     expect(approval.decision).toBe("APPROVED");
   });
+
+  it("triggers a scheduled run and reports its status", async () => {
+    const trigger = await post(
+      "/scheduling/trigger",
+      { idempotencyKey: "sched-key-1" },
+      "valid-token",
+    );
+    expect(trigger.status).toBe(200);
+    const run = (await trigger.json()) as { id: string; state: string };
+    expect(run.state).toBe("RESEARCHING");
+
+    const status = await get("/scheduling/status", "valid-token");
+    expect(status.status).toBe(200);
+    const body = (await status.json()) as { due: boolean; topics: string[] };
+    expect(body.due).toBe(true);
+  });
+
+  it("configures scheduling topics", async () => {
+    const put = await fetch(`${baseUrl}/scheduling/topics`, {
+      method: "PUT",
+      headers: {
+        "content-type": "application/json",
+        authorization: "Bearer valid-token",
+      },
+      body: JSON.stringify({ topics: ["angular", "aws"] }),
+    });
+    expect(put.status).toBe(204);
+
+    const topics = await get("/scheduling/topics", "valid-token");
+    expect(await topics.json()).toEqual(["angular", "aws"]);
+  });
 });

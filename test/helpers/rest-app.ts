@@ -50,12 +50,15 @@ import type {
   WorkflowRunSummary,
   WorkflowTransitionRecord,
 } from "../../src/core/ports/workflow-repository.ts";
+import type { SchedulingRepository } from "../../src/core/ports/scheduling-repository.ts";
+import { NULL_NOTIFICATION_PROVIDER } from "../../src/core/ports/notification-provider.ts";
 import type { Article, Comment, Tag, User } from "../../src/core/models.ts";
 import type { Pagination } from "../../src/core/policies/pagination.ts";
 import { ArticleManagementUseCases } from "../../src/core/use-cases/article-management.ts";
 import { DiscoveryUseCases } from "../../src/core/use-cases/discovery.ts";
 import { DraftingUseCases } from "../../src/core/use-cases/drafting.ts";
 import { RetrievalUseCases } from "../../src/core/use-cases/retrieval.ts";
+import { SchedulingUseCases } from "../../src/core/use-cases/scheduling.ts";
 import { WorkflowEngine } from "../../src/core/use-cases/workflow-engine.ts";
 import type { AuthorResolver } from "../../src/rest/auth.ts";
 import type { AppDependencies } from "../../src/rest/compose.ts";
@@ -368,14 +371,42 @@ class InMemoryRetrieval implements RetrievalRepository {
 }
 
 class InMemoryWorkflows implements WorkflowRepository, WorkflowAuditRepository {
-  async startRun(): Promise<WorkflowRunSummary> {
-    throw new Error("not implemented");
+  private runs = new Map<string, WorkflowRunSummary>();
+  private next = 1;
+
+  async startRun(input: {
+    authorId: string;
+    idempotencyKey?: string;
+    correlationId: string;
+  }): Promise<WorkflowRunSummary> {
+    const run: WorkflowRunSummary = {
+      id: `r${this.next++}`,
+      authorId: input.authorId,
+      draftId: null,
+      idempotencyKey: input.idempotencyKey ?? null,
+      state: "RESEARCHING",
+      attempt: 0,
+      leaseUntilMs: null,
+      leasedBy: null,
+      lastError: null,
+      result: null,
+      startedAtMs: Date.now(),
+      updatedAtMs: Date.now(),
+    };
+    this.runs.set(run.id, run);
+    return run;
   }
-  async getRun(): Promise<WorkflowRunSummary | undefined> {
-    return undefined;
+
+  async getRun(runId: string): Promise<WorkflowRunSummary | undefined> {
+    return this.runs.get(runId);
   }
-  async findRunByIdempotencyKey(): Promise<WorkflowRunSummary | undefined> {
-    return undefined;
+
+  async findRunByIdempotencyKey(
+    idempotencyKey: string,
+  ): Promise<WorkflowRunSummary | undefined> {
+    return [...this.runs.values()].find(
+      (run) => run.idempotencyKey === idempotencyKey,
+    );
   }
   async listResumableRuns(): Promise<readonly WorkflowRunSummary[]> {
     return [];
@@ -419,6 +450,26 @@ class InMemoryWorkflows implements WorkflowRepository, WorkflowAuditRepository {
   }
 }
 
+class InMemoryScheduling implements SchedulingRepository {
+  topics = new Map<string, string[]>();
+
+  async getTopics(authorId: string): Promise<readonly string[]> {
+    return this.topics.get(authorId) ?? [];
+  }
+
+  async setTopics(authorId: string, topics: readonly string[]): Promise<void> {
+    this.topics.set(authorId, [...topics]);
+  }
+
+  async getCadence(): Promise<string> {
+    return "weekly";
+  }
+
+  async getLastRunAtMs(): Promise<number | null> {
+    return null;
+  }
+}
+
 export interface TestDeps {
   readonly deps: AppDependencies;
   readonly articles: InMemoryArticles;
@@ -455,6 +506,12 @@ export function buildTestDeps(): TestDeps {
     logger,
     workerId: "test-worker",
   });
+  const scheduling = new SchedulingUseCases(
+    engine,
+    new InMemoryScheduling(),
+    NULL_NOTIFICATION_PROVIDER,
+    logger,
+  );
 
   const deps: AppDependencies = {
     prisma: {} as never,
@@ -464,6 +521,7 @@ export function buildTestDeps(): TestDeps {
     retrieval: retrievalUseCases,
     drafting,
     workflows: engine,
+    scheduling,
     repository: articles,
     retrievalRepository: retrieval,
     workflowRepository: workflows,

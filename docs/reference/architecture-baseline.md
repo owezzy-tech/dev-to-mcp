@@ -47,10 +47,10 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | FR-033 | Drafting runs deterministic duplication, claim, link, context, and policy checks. | dev-to-mcp-4tw.7 | Implemented |
 | FR-034 | Revision, manual edit, approval, rejection, and discard are explicit transitions. | dev-to-mcp-4tw.7 | Implemented |
 | FR-035 | Core policy prohibits invented personal-experience claims. | dev-to-mcp-4tw.7 | Implemented |
-| FR-040 | A scheduler invokes research and draft preparation workflows. | dev-to-mcp-4tw.9 | Deferred |
-| FR-041 | Scheduling never grants publication authority. | dev-to-mcp-4tw.9 | Deferred |
-| FR-042 | Weekly cadence and topic configuration are scheduling policy. | dev-to-mcp-4tw.9 | Deferred |
-| FR-043 | Low-value or duplicate runs produce an explicit no-publish result. | dev-to-mcp-4tw.9 | Deferred |
+| FR-040 | A scheduler invokes research and draft preparation workflows. | dev-to-mcp-4tw.9 | Implemented |
+| FR-041 | Scheduling never grants publication authority. | dev-to-mcp-4tw.9 | Implemented |
+| FR-042 | Weekly cadence and topic configuration are scheduling policy. | dev-to-mcp-4tw.9 | Implemented |
+| FR-043 | Low-value or duplicate runs produce an explicit no-publish result. | dev-to-mcp-4tw.9 | Implemented |
 | FR-050 | Existing Streamable HTTP metadata, schemas, descriptions, annotations, and tools are characterized. | dev-to-mcp-4tw.2 | Preserved |
 | FR-051 | Existing public tools are read/open-world annotated; write-tool separation and annotations remain authenticated adapter work. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.4 | Partial |
 | FR-052 | MCP session expiration and cleanup belong in the MCP adapter. | dev-to-mcp-4tw.2 | Deferred |
