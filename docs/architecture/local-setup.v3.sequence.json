@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Local MCP Setup and Request Flow",
+    "output": "local-setup.v3.html",
+    "quality_profile": "showcase",
+    "viewBox": [1040, 640],
+    "views": [
+      { "id": "bootstrap", "label": "Bootstrap services", "focus": ["developer", "compose", "postgres", "redis"], "note": "Start the local dependencies before applying the Prisma schema." },
+      { "id": "server", "label": "Start the server", "focus": ["developer", "server", "postgres", "dashboard"], "note": "The server mounts REST and the dashboard when persistence and a dashboard build are available." },
+      { "id": "mcp-request", "label": "Call MCP", "focus": ["client", "server", "forem"], "note": "An MCP client initializes a session, calls a tool, and receives normalized public DEV.to data." }
+    ]
+  },
+  "participants": [
+    { "id": "developer", "type": "external", "label": "Developer", "sublabel": "terminal" },
+    { "id": "compose", "type": "messagebus", "label": "Compose", "sublabel": "local services" },
+    { "id": "postgres", "type": "database", "label": "PostgreSQL", "sublabel": "pgvector" },
+    { "id": "redis", "type": "database", "label": "Redis", "sublabel": "cache" },
+    { "id": "server", "type": "backend", "label": "dev-to-mcp", "sublabel": "Express + MCP" },
+    { "id": "dashboard", "type": "frontend", "label": "Dashboard", "sublabel": "optional bundle" },
+    { "id": "client", "type": "external", "label": "MCP client", "sublabel": "Streamable HTTP" },
+    { "id": "forem", "type": "cloud", "label": "Forem API", "sublabel": "public content" }
+  ],
+  "segments": [
+    { "from": 150, "to": 330, "label": "Provision local dependencies" },
+    { "from": 348, "to": 420, "label": "Start application" },
+    { "from": 438, "to": 595, "label": "Initialize and call MCP" }
+  ],
+  "messages": [
+    { "from": "developer", "to": "compose", "y": 180, "label": "docker compose up -d", "variant": "emphasis" },
+    { "from": "compose", "to": "postgres", "y": 222, "label": "start pgvector", "variant": "default" },
+    { "from": "compose", "to": "redis", "y": 264, "label": "start Redis", "variant": "default" },
+    { "from": "developer", "to": "postgres", "y": 306, "label": "migrate", "variant": "emphasis" },
+    { "from": "developer", "to": "server", "y": 400, "label": "npm run dev", "variant": "emphasis" },
+    { "from": "client", "to": "server", "y": 410, "label": "POST /mcp initialize", "variant": "emphasis" },
+    { "from": "client", "to": "server", "y": 452, "label": "tools/call get_articles", "variant": "default" },
+    { "from": "server", "to": "forem", "y": 515, "label": "GET public articles", "variant": "default" },
+    { "from": "server", "to": "client", "y": 557, "label": "MCP text result", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "compose", "from": 174, "to": 318, "type": "messagebus" },
+    { "participant": "postgres", "from": 216, "to": 338, "type": "database" },
+    { "participant": "redis", "from": 258, "to": 318, "type": "database" },
+    { "participant": "server", "from": 394, "to": 592, "type": "backend" },
+    { "participant": "forem", "from": 530, "to": 584, "type": "cloud" }
+  ],
+  "cards": []
+}

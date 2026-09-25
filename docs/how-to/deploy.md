@@ -17,7 +17,7 @@ docker build -t dev-to-mcp .
 ```
 
 The image runs migrations at startup (via `npm run start`), serves MCP over
-Streamable HTTP on port 3000, and exposes `/healthz`, `/readyz`, and `/metrics`.
+Streamable HTTP on port 3535, and exposes `/healthz`, `/readyz`, and `/metrics`.
 
 ## 2. Run with Docker Compose
 
@@ -55,9 +55,9 @@ present.
 ## 5. Health and operations
 
 ```bash
-curl http://localhost:3000/healthz   # 200 liveness
-curl http://localhost:3000/readyz    # 200 when DATABASE_URL is configured
-curl http://localhost:3000/metrics   # Prometheus text format
+curl http://localhost:3535/healthz   # 200 liveness
+curl http://localhost:3535/readyz    # 200 when DATABASE_URL is configured
+curl http://localhost:3535/metrics   # Prometheus text format
 ```
 
 Logs, the `x-correlation-id` response header, audit events, and the request

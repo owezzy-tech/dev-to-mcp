@@ -17,6 +17,7 @@ import {
 } from "../../core/schemas.ts";
 import { InvalidInputError } from "../../errors/api-errors.ts";
 import { HttpClient } from "../../lib/http-client.ts";
+import { DevToAlgoliaSearch } from "./devto-algolia-search.ts";
 
 const FOREM_API_URL = "https://dev.to/api";
 
@@ -27,8 +28,11 @@ const FOREM_API_URL = "https://dev.to/api";
 export class ForemApiClient implements ForemClient {
   private readonly httpClient: HttpClient;
 
+  private readonly articleSearch: DevToAlgoliaSearch;
+
   constructor(httpClient: HttpClient) {
     this.httpClient = httpClient;
+    this.articleSearch = new DevToAlgoliaSearch(httpClient);
   }
 
   async listArticles(
@@ -60,7 +64,10 @@ export class ForemApiClient implements ForemClient {
       query.id !== undefined
         ? new URL(`${FOREM_API_URL}/articles/${query.id}`)
         : new URL(
-            `${FOREM_API_URL}/articles/${encodeURIComponent(query.path ?? "")}`,
+            `${FOREM_API_URL}/articles/${(query.path ?? "")
+              .split("/")
+              .map(encodeURIComponent)
+              .join("/")}`,
           );
     return normalizeArticle(
       await this.httpClient.getJson(url, {
@@ -124,16 +131,7 @@ export class ForemApiClient implements ForemClient {
     query: SearchArticlesQuery,
     context: ForemRequestContext,
   ): Promise<readonly Article[]> {
-    const url = new URL(`${FOREM_API_URL}/search/feed_content`);
-    url.searchParams.set("q", query.q);
-    appendPagination(url, query);
-    appendIfDefined(url, "search_fields", query.search_fields);
-    return normalizeArticles(
-      await this.httpClient.getJson(url, {
-        correlationId: context.correlationId,
-        endpoint: "articles.search",
-      }),
-    );
+    return this.articleSearch.search(query, context);
   }
 }
 

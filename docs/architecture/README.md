@@ -2,9 +2,34 @@
 
 This catalog connects the project architecture narrative to interactive, evidence-backed Archify diagrams. Each diagram is delivered as a standalone HTML viewer with theme switching, guided views, search, relationship tracing, pan and zoom, presentation mode, and export controls.
 
-## Project architecture
+## Current platform architecture
 
-**Purpose**: Show the implemented read-only MCP runtime beside the planned publishing platform without presenting deferred Modules as live behavior.
+**Purpose**: Show the implemented MCP, REST, Angular dashboard, shared core,
+workflow engine, persistence, providers, audit, and critical evaluation gate.
+
+- Interactive viewer: [`platform-architecture.v3.html`](platform-architecture.v3.html)
+- Frozen specification: [`platform-architecture.v3.archify.json`](platform-architecture.v3.archify.json)
+- Scope: current implementation
+- Diagram type: architecture
+
+The older `project-architecture.html` remains available as historical context;
+it describes the pre-platform planned boundary and should not be used as the
+current implementation map.
+
+## Local setup and MCP request flow
+
+**Purpose**: Show the clean-checkout path, optional Compose dependencies,
+Prisma migration, server startup, dashboard bundle, and MCP initialization.
+
+- Interactive viewer: [`local-setup.v3.html`](local-setup.v3.html)
+- Frozen specification: [`local-setup.v3.sequence.json`](local-setup.v3.sequence.json)
+- Scope: current local development workflow
+- Diagram type: sequence
+
+## Historical project architecture
+
+**Purpose**: Preserve the original architecture baseline for comparison with
+the current platform diagram.
 
 - Interactive viewer: [`project-architecture.html`](project-architecture.html)
 - Frozen specification: [`project-architecture.archify.json`](project-architecture.archify.json)
@@ -31,21 +56,24 @@ This catalog connects the project architecture narrative to interactive, evidenc
 
 ## Approval-aware Draft lifecycle
 
-**Purpose**: Define the planned Draft workflow, including the exact version-and-content-hash Approval gate, rejection and revision, edit invalidation, publication retry, and explicit no-publish outcome.
+**Purpose**: Show the implemented Draft workflow, including the exact
+version-and-content-hash Approval gate, rejection and revision, edit
+invalidation, publication retry, and explicit no-publish outcome.
 
 - Interactive viewer: [`draft-lifecycle.html`](draft-lifecycle.html)
 - Frozen specification: [`draft-lifecycle.archify.json`](draft-lifecycle.archify.json)
 - Superseded v1 specification: [`draft-lifecycle.v1.archify.json`](draft-lifecycle.v1.archify.json)
 - Visual review contact sheet: [`draft-lifecycle.visual-check.html`](draft-lifecycle.visual-check.html)
 - Visual-check receipt: [`draft-lifecycle.visual-check.json`](draft-lifecycle.visual-check.json)
-- Scope: planned workflow contract
+- Scope: current workflow contract
 - Diagram type: lifecycle
 - Specification SHA-256: `4ff4ecdee320d4c9774efab4d206324e57196a1b1562b710f5e7bb8a001bc138`
 - Artifact SHA-256: `693f7627188701aa53ee94b2b11e27d952cb0384f9b4599a9b3fac8249bea99e`
 
 ## Quality status
 
-- All three frozen specifications pass the Archify showcase profile.
+- The current platform and local-setup specifications pass the Archify showcase profile.
+- The historical project, MCP sequence, and lifecycle specifications remain frozen artifacts.
 - Each delivery passes all 9 structural and composition checks with zero errors and zero warnings.
 - Light and dark theme captures are stored beside each viewer at 1440×900 and 2048×1320.
 - Presentation mode is the first-screen containment surface. Read mode intentionally continues below the fold to show supporting cards.

@@ -2,7 +2,7 @@
 
 ## Decisions and boundaries
 
-This baseline preserves the public dev.to discovery MCP server. No authenticated publishing, OAuth, Prisma schema, Redis client, embeddings, model calls, scheduler, Angular UI, or WebMCP runtime registration is introduced.
+This baseline describes the shipped DEV.to Agent Publishing Platform. The public Streamable HTTP MCP path works without persistence; configured deployments add Prisma/pgvector, Redis, REST, Angular/WebMCP, provider adapters, approval-aware workflows, scheduling, audit history, and release evaluations.
 
 | Decision | Contract |
 | --- | --- |
@@ -27,20 +27,20 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | FR-001 | Existing discovery lists articles with the supported filters; typed normalization and limits remain core work. | dev-to-mcp-4tw.2 | Preserved |
 | FR-002 | Existing discovery retrieves articles by numeric ID or canonical author/slug path. | dev-to-mcp-4tw.2 | Preserved |
 | FR-003 | Existing discovery retrieves public profiles, tags, and threaded comments. | dev-to-mcp-4tw.2 | Preserved |
-| FR-004 | Stable typed Forem response normalization belongs in the shared core. | dev-to-mcp-4tw.2 | Deferred |
-| FR-005 | Pagination limits belong in shared schemas and public discovery handlers. | dev-to-mcp-4tw.2 | Deferred |
+| FR-004 | Stable typed Forem response normalization belongs in the shared core. | dev-to-mcp-4tw.2 | Implemented |
+| FR-005 | Pagination limits belong in shared schemas and public discovery handlers. | dev-to-mcp-4tw.2 | Implemented |
 | FR-010 | Semantic search is a core port backed by PostgreSQL/pgvector. | dev-to-mcp-4tw.6 | Implemented |
 | FR-011 | Hybrid ranking is core policy with evaluation fixtures. | dev-to-mcp-4tw.6 | Implemented |
 | FR-012 | Author-history comparison and duplicate detection use the retrieval port. | dev-to-mcp-4tw.6 | Implemented |
 | FR-013 | Content-gap results expose typed evidence and confidence. | dev-to-mcp-4tw.6 | Implemented |
 | FR-014 | Third-party content remains untrusted across retrieval and workflow boundaries. | dev-to-mcp-4tw.6 | Implemented |
-| FR-020 | A server-side Forem adapter owns API-key authentication and version headers. | dev-to-mcp-4tw.4 | Deferred |
-| FR-021 | Authenticated article listing is a shared application handler. | dev-to-mcp-4tw.4 | Deferred |
-| FR-022 | Draft creation accepts the SRS article fields through the authenticated adapter. | dev-to-mcp-4tw.4 | Deferred |
-| FR-023 | Draft updates create versions and append audit events. | dev-to-mcp-4tw.4 | Deferred |
-| FR-024 | Publish verifies an unexpired approval for the exact draft version. | dev-to-mcp-4tw.4 | Deferred |
-| FR-025 | Publish rejects missing, rejected, expired, mismatched, or invalidated approvals. | dev-to-mcp-4tw.4 | Deferred |
-| FR-026 | Visibility-changing operations return confirmation and use idempotency where supported. | dev-to-mcp-4tw.4 | Deferred |
+| FR-020 | A server-side Forem adapter owns API-key authentication and version headers. | dev-to-mcp-4tw.4 | Implemented |
+| FR-021 | Authenticated article listing is a shared application handler. | dev-to-mcp-4tw.4 | Implemented |
+| FR-022 | Draft creation accepts the SRS article fields through the authenticated adapter. | dev-to-mcp-4tw.4 | Implemented |
+| FR-023 | Draft updates create versions and append audit events. | dev-to-mcp-4tw.4 | Implemented |
+| FR-024 | Publish verifies an unexpired approval for the exact draft version. | dev-to-mcp-4tw.4 | Implemented |
+| FR-025 | Publish rejects missing, rejected, expired, mismatched, or invalidated approvals. | dev-to-mcp-4tw.4 | Implemented |
+| FR-026 | Visibility-changing operations return confirmation and use idempotency where supported. | dev-to-mcp-4tw.4 | Implemented |
 | FR-030 | Idea generation returns audience, value, differentiation, and cited evidence. | dev-to-mcp-4tw.7 | Implemented |
 | FR-031 | Draft generation produces original Markdown from approved topics and style guidance. | dev-to-mcp-4tw.7 | Implemented |
 | FR-032 | Technical claims carry sources or explicit verification markers. | dev-to-mcp-4tw.7 | Implemented |
@@ -53,8 +53,8 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | FR-043 | Low-value or duplicate runs produce an explicit no-publish result. | dev-to-mcp-4tw.9 | Implemented |
 | FR-050 | Existing Streamable HTTP metadata, schemas, descriptions, annotations, and tools are characterized. | dev-to-mcp-4tw.2 | Preserved |
 | FR-051 | Existing public tools are read/open-world annotated; write-tool separation and annotations remain authenticated adapter work. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.4 | Partial |
-| FR-052 | MCP session expiration and cleanup belong in the MCP adapter. | dev-to-mcp-4tw.2 | Deferred |
-| FR-053 | Safe actionable error normalization belongs in shared errors and adapter mapping. | dev-to-mcp-4tw.2 | Deferred |
+| FR-052 | MCP session expiration and cleanup belong in the MCP adapter. | dev-to-mcp-4tw.2 | Implemented |
+| FR-053 | Safe actionable error normalization belongs in shared errors and adapter mapping. | dev-to-mcp-4tw.2 | Implemented |
 | FR-060 | Top-level WebMCP registration belongs only in the dashboard adapter. | dev-to-mcp-4tw.8 | Implemented |
 | FR-061 | Privileged WebMCP tools call authenticated backend handlers; secrets remain server-side. | dev-to-mcp-4tw.8 | Implemented |
 | FR-062 | Dashboard state exposes capabilities, actions, evidence, drafts, approvals, and audit events. | dev-to-mcp-4tw.8 | Implemented |
@@ -63,14 +63,14 @@ The source of truth is [`docs/requirements/DEVto_Agent_Publishing_Platform_SRS.d
 | FR-070 | Material workflow events persist sanitized actor, correlation, tool, result, and resource data. | dev-to-mcp-4tw.5 | Implemented |
 | FR-071 | Approval records persist approver, decision, timestamp, version/hash, and feedback. | dev-to-mcp-4tw.5 | Implemented |
 | FR-073 | Article workflows expose chronological audit history. | dev-to-mcp-4tw.5 | Implemented |
-| SEC-001 | Secrets stay in server environment or managed secret storage and out of code, logs, prompts, and clients. | dev-to-mcp-4tw.3 | Deferred |
-| SEC-002 | Authenticated backend sessions and per-tool authorization belong in the security foundation. | dev-to-mcp-4tw.3 | Deferred |
-| SEC-003 | Read, draft-write, and publish permissions are distinct server-side capabilities. | dev-to-mcp-4tw.3 / dev-to-mcp-4tw.4 | Deferred |
-| SEC-004 | Existing arguments are schema-validated; size limits and sanitization remain hardening work. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 | Partial |
+| SEC-001 | Secrets stay in server environment or managed secret storage and out of code, logs, prompts, and clients. | dev-to-mcp-4tw.3 | Implemented |
+| SEC-002 | Authenticated backend sessions and per-tool authorization belong in the security foundation. | dev-to-mcp-4tw.3 | Implemented |
+| SEC-003 | Read, draft-write, and publish permissions are distinct server-side capabilities. | dev-to-mcp-4tw.3 / dev-to-mcp-4tw.4 | Implemented |
+| SEC-004 | Existing arguments are schema-validated; size limits and sanitization remain hardening work. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 | Implemented |
 | SEC-005 | Retrieval treats article bodies, comments, links, and tool content as hostile data. | dev-to-mcp-4tw.6 | Implemented |
 | SEC-006 | Retrieved instructions cannot trigger tools, disclosure, policy changes, approval, or publication. | dev-to-mcp-4tw.6 | Implemented |
 | SEC-007 | Server-side publish verification enforces approval, version/hash, actor, and lifecycle policy. | dev-to-mcp-4tw.4 / dev-to-mcp-4tw.5 | Implemented |
-| SEC-008 | Structured logging and audit persistence redact secrets, tokens, and unnecessary sensitive content. | dev-to-mcp-4tw.3 | Deferred |
+| SEC-008 | Structured logging and audit persistence redact secrets, tokens, and unnecessary sensitive content. | dev-to-mcp-4tw.3 | Implemented |
 | SEC-009 | Timeouts/retries, rate limits, and duplicate-publish protection span discovery, security, and workflows. | dev-to-mcp-4tw.2 / dev-to-mcp-4tw.3 / dev-to-mcp-4tw.5 | Implemented |
 | SEC-010 | The lockfile pins the MCP SDK and its production dependencies at patched releases, and the Docker workflow blocks known high-severity production dependency vulnerabilities. | dev-to-mcp-4tw.10 | Preserved |
 | SEC-011 | Upstream MIT provenance is verified and this repository carries an explicit repository-level MIT `LICENSE`, so redistribution is permitted. | dev-to-mcp-4tw.1 | Preserved |
