@@ -45,6 +45,7 @@ export type HttpRequestOptions = HttpRequestContext & {
   readonly method?: HttpMethod;
   readonly headers?: Readonly<Record<string, string>>;
   readonly body?: unknown;
+  readonly readAs?: "json" | "text";
 };
 
 const defaultSleep: Sleep = async (delayMs) => {
@@ -70,6 +71,17 @@ export class HttpClient {
 
   getJson(url: URL, context: HttpRequestContext): Promise<unknown> {
     return this.request(url, { ...context, method: "GET" });
+  }
+
+  async getText(url: URL, context: HttpRequestContext): Promise<string> {
+    return String(
+      await this.request(url, {
+        ...context,
+        method: "GET",
+        headers: { accept: "text/html" },
+        readAs: "text",
+      }),
+    );
   }
 
   async request(url: URL, options: HttpRequestOptions): Promise<unknown> {
@@ -166,7 +178,9 @@ export class HttpClient {
     }
 
     try {
-      return await response.json();
+      return options.readAs === "text"
+        ? await response.text()
+        : await response.json();
     } catch (error) {
       throw mapPayloadError(error);
     }
