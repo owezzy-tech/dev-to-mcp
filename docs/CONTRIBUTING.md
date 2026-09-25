@@ -36,7 +36,7 @@ npm run dev
 5. Verify the metadata endpoint in another terminal.
 
 ```bash
-curl http://127.0.0.1:3000/mcp
+curl http://127.0.0.1:3535/mcp
 ```
 
 ## Understand the change boundary
@@ -67,7 +67,7 @@ If the change affects the container, also run:
 
 ```bash
 docker build -t dev-to-mcp:local .
-docker run --rm -p 3000:3000 dev-to-mcp:local
+docker run --rm -p 3535:3535 dev-to-mcp:local
 ```
 
 ## Write focused changes

@@ -32,7 +32,7 @@ This is a Model Context Protocol (MCP) server that provides access to the dev.to
 ### Core Components
 
 - **`src/index.ts`** - Main MCP server entry point that:
-  - Sets up the HTTP server transport on port 3000 (configurable via PORT env var)
+  - Sets up the HTTP server transport on port 3535 (configurable via PORT env var)
   - Defines all available MCP tools with their JSON schemas
   - Routes tool calls to the DevToAPI class
   - Handles error responses in MCP format

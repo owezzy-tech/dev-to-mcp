@@ -9,7 +9,7 @@ dashboard built.
 ```bash
 docker compose up -d
 cd dashboard && npm ci && npm run build
-open http://localhost:3000
+open http://localhost:3535
 ```
 
 ## The journey
