@@ -168,9 +168,22 @@ if (existsSync(dashboardRoot)) {
   logger.info({}, "Dev.to dashboard served at /");
 }
 
-app.listen(port, () => {
+const httpServer = app.listen(port, () => {
   logger.info(
     { port, environment: config.NODE_ENV },
     "Dev.to MCP Server started",
   );
 });
+
+// PID 1 in a container ignores SIGTERM unless handled; close sessions so
+// `docker stop` exits promptly instead of waiting for SIGKILL.
+const shutdown = (signal: NodeJS.Signals): void => {
+  logger.info({ signal }, "Dev.to MCP Server stopping");
+  httpServer.close();
+  void sessions.dispose().finally(() => {
+    httpServer.closeAllConnections();
+    process.exit(0);
+  });
+};
+process.once("SIGTERM", shutdown);
+process.once("SIGINT", shutdown);

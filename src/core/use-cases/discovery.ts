@@ -8,7 +8,10 @@ import type {
   SearchArticlesQuery,
 } from "../ports/forem-client.ts";
 import type { AppLogger } from "../ports/logger.ts";
-import { requirePositiveInteger } from "../policies/identifiers.ts";
+import {
+  requireArticlePath,
+  requirePositiveInteger,
+} from "../policies/identifiers.ts";
 import { parsePagination } from "../policies/pagination.ts";
 
 /**
@@ -49,11 +52,15 @@ export class DiscoveryUseCases {
     if (query.id !== undefined) {
       requirePositiveInteger(query.id, "Article ID");
     }
+    const normalized =
+      query.id === undefined && query.path !== undefined
+        ? { ...query, path: requireArticlePath(query.path) }
+        : query;
     this.logger.debug(
       { correlationId, operation: "getArticle" },
       "discovery.call",
     );
-    return this.foremClient.getArticle(query, { correlationId });
+    return this.foremClient.getArticle(normalized, { correlationId });
   }
 
   getUser(query: GetUserQuery, correlationId: string): Promise<User> {

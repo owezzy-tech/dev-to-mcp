@@ -1,56 +1,20 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+# DEV.to MCP Server
 
-<a id="readme-top"></a>
+An MCP-first DEV.to agent publishing platform. It exposes public DEV.to
+discovery tools over Streamable HTTP and, when persistence is configured,
+mounts a versioned REST API and Angular dashboard for retrieval, drafting,
+approval-aware workflows, scheduling, audit history, and publishing.
 
-<!-- PROJECT SHIELDS -->
-
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-
-<h3 align="center">DEV.to MCP Server</h3>
-
-  <p align="center">
-    A read-only remote Model Context Protocol server for discovering public DEV.to content through the Forem API.
-    <br />
-    <a href="docs/README.md"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="docs/architecture/project-architecture.html">View Architecture</a>
-    &middot;
-    <a href="https://github.com/owezzy-tech/dev-to-mcp/issues/new?labels=bug">Report Bug</a>
-    &middot;
-    <a href="https://github.com/owezzy-tech/dev-to-mcp/issues/new?labels=enhancement">Request Feature</a>
-  </p>
-</div>
-
-<!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
+    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#configuration">Configuration</a></li>
+    <li><a href="#full-local-platform">Full local platform</a></li>
+    <li><a href="#development-commands">Development commands</a></li>
     <li><a href="#docker">Docker</a></li>
-    <li><a href="#development">Development</a></li>
+    <li><a href="#documentation-map">Documentation map</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -59,210 +23,276 @@
   </ol>
 </details>
 
-<!-- ABOUT THE PROJECT -->
-
 ## About The Project
 
-[![Project architecture][product-screenshot]](docs/architecture/project-architecture.html)
+[![Project architecture](docs/architecture/project-architecture.visual-check.1440x900.light.png)](docs/architecture/project-architecture.html)
 
-DEV.to MCP Server exposes DEV.to's public API to MCP clients over Streamable HTTP. The current implementation is read-only, requires no DEV.to API key, and wraps public DEV.to responses in MCP text-content results.
+The adapters converge on one shared core. MCP and REST do not duplicate
+business policy; the workflow engine enforces approval, version/hash matching,
+leases, retries, audit records, and the rule that scheduling cannot publish.
 
-The server currently provides six read-only tools:
-
-- `get_articles`: list public articles with filters for username, tag, top window, pagination, and state
-- `get_article`: retrieve one article by numeric ID or DEV.to path
-- `get_user`: retrieve one public user by ID or username
-- `get_tags`: list popular DEV.to tags
-- `get_comments`: list comments for an article
-- `search_articles`: search DEV.to feed content
-
-This repository also includes architecture and requirements documentation for a planned approval-aware publishing platform. Planned publishing, persistence, retrieval, scheduling, and dashboard components are documented separately from the implemented read-only runtime.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+- [Current platform architecture](docs/architecture/platform-architecture.v3.html)
+- [Local setup and MCP request flow](docs/architecture/local-setup.v3.html)
+- [Draft lifecycle](docs/architecture/draft-lifecycle.html)
+- [Architecture catalog](docs/architecture/README.md)
+- [Architecture baseline and SRS traceability](docs/reference/architecture-baseline.md)
 
 ### Built With
 
-- [![Node.js][Node.js]][Node-url]
-- [![TypeScript][TypeScript]][TypeScript-url]
-- [![Express][Express.js]][Express-url]
-- [![MCP SDK][MCP]][MCP-url]
-- [![Vite][Vite]][Vite-url]
-- [![Vitest][Vitest]][Vitest-url]
-- [![Docker][Docker]][Docker-url]
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- GETTING STARTED -->
+- Node.js 22+ and TypeScript
+- Express and the Model Context Protocol SDK
+- Prisma with PostgreSQL/pgvector, and Redis
+- Angular (dashboard)
+- Vite, Vitest, and Docker
 
 ## Getting Started
 
-Follow these steps to run the MCP server locally from a clean checkout.
+The public MCP path does not require PostgreSQL, Redis, an API key, or a model
+provider. A clean checkout can be running in under a minute.
 
 ### Prerequisites
 
 - Node.js 22 or newer
 - npm
-- Git
-- Docker, only if you need to validate the image or future local data adapters
+- Network access to `https://dev.to`
 
 ### Installation
 
-1. Clone the repo.
+```bash
+git clone https://github.com/owezzy-tech/dev-to-mcp.git
+cd dev-to-mcp
+npm ci
+npm run dev
+```
 
-   ```bash
-   git clone https://github.com/owezzy-tech/dev-to-mcp.git
-   cd dev-to-mcp
-   ```
+The development server listens on `http://127.0.0.1:3535` by default. Verify
+it in another terminal:
 
-2. Install the locked dependency set.
+```bash
+curl http://127.0.0.1:3535/healthz
+curl http://127.0.0.1:3535/mcp
+```
 
-   ```bash
-   npm ci
-   ```
+To run the MCP server as a local container instead, use the `mcp` Compose
+service. It needs no database and restarts with Docker:
 
-3. Build the server.
-
-   ```bash
-   npm run build
-   ```
-
-4. Start the production entry point.
-
-   ```bash
-   npm start
-   ```
-
-5. Confirm the Streamable HTTP endpoint is reachable.
-
-   ```bash
-   curl http://127.0.0.1:3000/mcp
-   ```
-
-For a guided walkthrough, see the [getting-started tutorial](docs/tutorials/getting-started.md).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- USAGE EXAMPLES -->
+```bash
+docker compose up -d --build mcp
+```
 
 ## Usage
 
-Configure an MCP client that supports Streamable HTTP with this server URL:
+Configure an MCP client with this Streamable HTTP URL:
 
 ```text
-http://127.0.0.1:3000/mcp
+http://127.0.0.1:3535/mcp
 ```
 
-The server advertises its tools during MCP initialization. Tool calls return JSON-stringified DEV.to responses in an MCP text-content envelope.
+The public tools are:
 
-Example development flow:
+- `get_articles`
+- `get_article`
+- `get_user`
+- `get_tags`
+- `get_comments`
+- `search_articles`
+
+DEV.to retired its public search endpoint, so `search_articles` queries the
+Algolia index behind the DEV.to site search, using the public search-only key
+published on `https://dev.to/search`. Results omit `description`.
+
+See [Connect an MCP client](docs/how-to/connect-an-mcp-client.md) for the
+initialization/session contract and client configuration example.
+
+## Full local platform
+
+Use the full stack when you need the REST API, dashboard, drafts, retrieval,
+workflow persistence, or pgvector integration.
+
+### 1. Start PostgreSQL/pgvector and Redis
+
+Docker Desktop (or another Docker Engine with Compose) is required.
+
+```bash
+docker compose -f compose.yml up -d
+docker compose -f compose.yml ps
+```
+
+The Compose services bind to loopback only:
+
+```text
+PostgreSQL: 127.0.0.1:5432
+Redis:      127.0.0.1:6379
+```
+
+If either port is already in use, choose another host port:
+
+```bash
+POSTGRES_PORT=55432 REDIS_PORT=56379 docker compose -f compose.yml up -d
+```
+
+Use matching URLs in the environment below.
+
+### 2. Configure the server
+
+Create a local shell environment. Do not commit this file or real secrets.
+
+```bash
+export DATABASE_URL='postgresql://dev_to_mcp:dev_to_mcp_local@127.0.0.1:5432/dev_to_mcp'
+export REDIS_URL='redis://127.0.0.1:6379'
+export MCP_BEARER_TOKEN='replace-with-at-least-16-random-characters'
+```
+
+The MCP discovery path remains public. `MCP_BEARER_TOKEN` is reserved for
+authenticated deployments and must not be placed in browser code or an MCP
+client configuration unless the deployment explicitly requires it.
+
+Apply the checked-in migrations and generate the Prisma client:
+
+```bash
+npm run prisma:migrate:deploy
+npm run prisma:generate
+```
+
+### 3. Run the server and dashboard
+
+Run the API in one terminal:
 
 ```bash
 npm run dev
 ```
 
-Then point your MCP client at `http://127.0.0.1:3000/mcp` and call a read-only tool such as `get_articles`, `get_tags`, or `search_articles`.
+Build the Angular dashboard in another terminal:
 
-For client configuration details, session behavior, and troubleshooting, see [Connect an MCP client](docs/how-to/connect-an-mcp-client.md).
+```bash
+cd dashboard
+npm ci
+npm start
+```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+For a production-style single process, build the dashboard and root server:
 
-## Configuration
+```bash
+cd dashboard && npm ci && npm run build
+cd ..
+npm run build
+npm start
+```
 
-| Variable         | Default       | Accepted values or purpose                   |
-| ---------------- | ------------- | -------------------------------------------- |
-| `PORT`           | `3000`        | HTTP listening port                          |
-| `NODE_ENV`       | `development` | `development`, `production`, or `test`       |
-| `SERVER_NAME`    | `dev-to-mcp`  | Server name used by runtime configuration    |
-| `SERVER_VERSION` | `1.0.0`       | Server version used by runtime configuration |
-| `LOG_LEVEL`      | `info`        | `error`, `warn`, `info`, or `debug`          |
+The root server serves the dashboard bundle at `/` when
+`dashboard/dist/dashboard/browser` exists. The API is mounted at `/v1` when
+`DATABASE_URL` is configured.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Useful probes:
+
+```bash
+curl http://127.0.0.1:3535/healthz
+curl http://127.0.0.1:3535/readyz
+curl http://127.0.0.1:3535/metrics
+```
+
+`/readyz` returns success only when `DATABASE_URL` is configured. Authenticated
+`/v1` routes require a valid dashboard session; a local session/login UI is not
+currently included, so public MCP discovery is the simplest first verification.
+
+### Optional providers
+
+The platform uses provider ports and falls back to null adapters when keys are
+absent. Configure only the capabilities you need:
+
+```bash
+export FOREM_API_KEY='...'                 # authenticated DEV.to writes
+export EMBEDDING_API_KEY='...'             # hybrid retrieval vectors
+export EMBEDDING_BASE_URL='https://api.openai.com'
+export GENERATION_API_KEY='...'            # idea and draft generation
+export GENERATION_BASE_URL='https://api.openai.com'
+export TYPESAFE_API_KEY='...'              # Jev duplication/gap/safety judgments
+export TYPESAFE_BASE_URL='https://api.typesafe.ai'
+```
+
+Provider keys are read only by the server. Never put them in `dashboard/` or
+commit them to the repository.
+
+## Development commands
+
+```bash
+npm run dev                 # watch the TypeScript server
+npm run build               # build the root server
+npm run typecheck           # TypeScript validation
+npm run lint                # ESLint
+npm run format:check        # Prettier check
+npm run test:ci             # root Vitest suite
+npm run eval                # critical safety evaluations
+npm run prisma:migrate:dev  # create a development migration
+```
+
+Dashboard commands run from `dashboard/`:
+
+```bash
+npm ci
+npm start
+npm run build
+npm run test:ci
+```
 
 ## Docker
 
-Build and run the MCP server image from source:
+Build and run the server image with Compose (image `dev-to-mcp:local`,
+bound to `127.0.0.1:3535`; set `MCP_PORT` to change the host port):
 
 ```bash
-docker build -t dev-to-mcp .
-docker run --rm -p 3000:3000 dev-to-mcp
+docker compose up -d --build mcp
 ```
 
-The image is also built and published to Docker Hub by `.github/workflows/docker.yml` on every push to `main`. It is pushed to `${DOCKERHUB_NAMESPACE}/dev-to-mcp` (repository variable, default `owezzy`) with a `latest` tag and an immutable commit-SHA tag.
-
-The checked-in Compose file starts loopback-bound PostgreSQL/pgvector and Redis services reserved for future adapters. The current MCP server does not use those services and still runs separately.
+Or with plain Docker:
 
 ```bash
-docker compose up -d
-docker compose ps
-npm run dev
+docker build -t dev-to-mcp:local .
+docker run -d --name dev-to-mcp -p 127.0.0.1:3535:3535 dev-to-mcp:local
 ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+The image contains the root server. It does not provision PostgreSQL or Redis;
+provide those services separately and pass `DATABASE_URL`/`REDIS_URL` when
+running the full platform.
 
-## Development
+## Documentation map
 
-Common development and quality commands:
-
-```bash
-npm run dev
-npm run typecheck
-npm run lint
-npm run format:check
-npm run test:ci
-npm run build
-```
-
-Tests use Vitest and live in the top-level `test/` directory. Runtime source lives in `src/` and builds to `dist/` through Vite.
-
-Project documentation starts at [docs/README.md](docs/README.md):
-
-- [Getting started](docs/tutorials/getting-started.md)
+- [Getting started tutorial](docs/tutorials/getting-started.md)
 - [Connect an MCP client](docs/how-to/connect-an-mcp-client.md)
-- [Architecture baseline](docs/reference/architecture-baseline.md)
+- [Deployment guide](docs/how-to/deploy.md)
+- [REST boundary](src/rest/README.md)
+- [MCP adapter](src/mcp/README.md)
 - [Domain language](docs/explanation/domain-language.md)
 - [Implementation plan](docs/explanation/implementation-plan.md)
-- [Software requirements](docs/requirements/DEVto_Agent_Publishing_Platform_SRS.docx)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- ROADMAP -->
+- [Contributing](docs/CONTRIBUTING.md)
 
 ## Roadmap
 
 Implemented:
 
-- [x] Streamable HTTP MCP endpoint
-- [x] Read-only DEV.to public API client
-- [x] Article, user, tag, comment, and search tools
-- [x] Architecture and contributor documentation
-- [x] Container image build and publish workflow on `main`
+- [x] Streamable HTTP MCP endpoint with public DEV.to discovery tools
+- [x] Versioned REST API, Angular dashboard, and WebMCP adapter
+- [x] Retrieval, drafting, approval-aware workflows, and scheduling
+- [x] Critical evaluations, observability, and release gates
 
-Planned and documented for future work:
-
-- [ ] Approval-aware DEV.to publishing workflow
-- [ ] Persistence adapters for future platform state
-- [ ] Retrieval, scheduling, and dashboard capabilities
-
-See the [open issues](https://github.com/owezzy-tech/dev-to-mcp/issues) and [implementation plan](docs/explanation/implementation-plan.md) for proposed features and known gaps.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- CONTRIBUTING -->
+See the [open issues](https://github.com/owezzy-tech/dev-to-mcp/issues) and
+[implementation plan](docs/explanation/implementation-plan.md) for proposed
+features and known gaps.
 
 ## Contributing
 
-Contributions are welcome. Keep changes focused, preserve the current read-only MCP contract unless the change explicitly updates it, and keep implemented behavior separate from planned architecture.
+Contributions are welcome. Keep changes focused and add or update tests when
+behavior changes.
 
 1. Fork the project.
 2. Create a focused feature branch.
 3. Install dependencies with `npm ci`.
-4. Make the change and add or update tests when behavior changes.
-5. Run the quality checks listed in [Development](#development).
-6. Open a pull request with the behavior affected and checks performed.
+4. Make the change and run the checks in [Development commands](#development-commands).
+5. Open a pull request with the behavior affected and checks performed.
 
-Read the full [contributing guide](docs/CONTRIBUTING.md) before opening a pull request. Participation is governed by the [Code of Conduct](docs/CODE_OF_CONDUCT.md).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+Read the full [contributing guide](docs/CONTRIBUTING.md) before opening a pull
+request. Participation is governed by the
+[Code of Conduct](docs/CODE_OF_CONDUCT.md).
 
 ### Top contributors:
 
@@ -270,15 +300,9 @@ Read the full [contributing guide](docs/CONTRIBUTING.md) before opening a pull r
   <img src="https://contrib.rocks/image?repo=owezzy-tech/dev-to-mcp" alt="contrib.rocks image" />
 </a>
 
-<!-- LICENSE -->
-
 ## License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- CONTACT -->
 
 ## Contact
 
@@ -286,42 +310,8 @@ Owen Adirah: [@owezzy-tech](https://github.com/owezzy-tech)
 
 Project Link: [https://github.com/owezzy-tech/dev-to-mcp](https://github.com/owezzy-tech/dev-to-mcp)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- ACKNOWLEDGMENTS -->
-
 ## Acknowledgments
 
 - [DEV Community](https://dev.to/) and the public [Forem API](https://developers.forem.com/api)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [Best README Template](https://github.com/othneildrew/Best-README-Template)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- MARKDOWN LINKS & IMAGES -->
-
-[contributors-shield]: https://img.shields.io/github/contributors/owezzy-tech/dev-to-mcp.svg?style=for-the-badge
-[contributors-url]: https://github.com/owezzy-tech/dev-to-mcp/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/owezzy-tech/dev-to-mcp.svg?style=for-the-badge
-[forks-url]: https://github.com/owezzy-tech/dev-to-mcp/network/members
-[stars-shield]: https://img.shields.io/github/stars/owezzy-tech/dev-to-mcp.svg?style=for-the-badge
-[stars-url]: https://github.com/owezzy-tech/dev-to-mcp/stargazers
-[issues-shield]: https://img.shields.io/github/issues/owezzy-tech/dev-to-mcp.svg?style=for-the-badge
-[issues-url]: https://github.com/owezzy-tech/dev-to-mcp/issues
-[license-shield]: https://img.shields.io/github/license/owezzy-tech/dev-to-mcp.svg?style=for-the-badge
-[license-url]: https://github.com/owezzy-tech/dev-to-mcp/blob/main/LICENSE
-[product-screenshot]: docs/architecture/project-architecture.visual-check.1440x900.light.png
-[Node.js]: https://img.shields.io/badge/Node.js-22+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white
-[Node-url]: https://nodejs.org/
-[TypeScript]: https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white
-[TypeScript-url]: https://www.typescriptlang.org/
-[Express.js]: https://img.shields.io/badge/Express-5.1-000000?style=for-the-badge&logo=express&logoColor=white
-[Express-url]: https://expressjs.com/
-[MCP]: https://img.shields.io/badge/MCP-SDK_1.30-5A45FF?style=for-the-badge
-[MCP-url]: https://modelcontextprotocol.io/
-[Vite]: https://img.shields.io/badge/Vite-5.x-646CFF?style=for-the-badge&logo=vite&logoColor=white
-[Vite-url]: https://vitejs.dev/
-[Vitest]: https://img.shields.io/badge/Vitest-3.x-6E9F18?style=for-the-badge&logo=vitest&logoColor=white
-[Vitest-url]: https://vitest.dev/
-[Docker]: https://img.shields.io/badge/Docker-ready-2496ED?style=for-the-badge&logo=docker&logoColor=white
-[Docker-url]: https://www.docker.com/

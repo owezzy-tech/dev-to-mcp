@@ -1,6 +1,16 @@
 name: dev-to-mcp-local
 
 services:
+  # Read-only dev.to MCP server. Needs no database; start alone with
+  # `docker compose up -d --build mcp` and connect to http://127.0.0.1:3535/mcp.
+  mcp:
+    build: .
+    image: dev-to-mcp:local
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "127.0.0.1:${MCP_PORT:-3535}:3535"
   postgres:
     image: pgvector/pgvector:pg16
     environment:

@@ -1,48 +1,49 @@
 # Connect an MCP client
 
-Use this guide to connect a client that supports the Model Context Protocol Streamable HTTP transport.
+Use this guide to connect a client that supports the Model Context Protocol
+Streamable HTTP transport.
 
 ## Start the server
 
-From the repository root:
+For public discovery, no database or API key is required:
 
 ```bash
 npm ci
-npm run build
-npm start
+npm run dev
 ```
 
-The default MCP URL is:
+The endpoint is:
 
 ```text
-http://127.0.0.1:3000/mcp
+http://127.0.0.1:3535/mcp
 ```
 
-Set `PORT` before starting the process if the client must use another local port:
+Set `PORT` if required:
 
 ```bash
-PORT=4100 npm start
+PORT=4100 npm run dev
 ```
 
 ## Configure the client
 
-MCP clients use different configuration file names, but the remote-server entry generally needs a name and URL. Adapt this generic shape to your client's documentation:
+Adapt this generic shape to the client's configuration format:
 
 ```json
 {
   "mcpServers": {
     "dev-to": {
-      "url": "http://127.0.0.1:3000/mcp"
+      "url": "http://127.0.0.1:3535/mcp"
     }
   }
 }
 ```
 
-Select Streamable HTTP when the client asks for a transport. Do not configure an API key for this server; all current tools use public DEV.to endpoints.
+Select Streamable HTTP. Public discovery does not require an API key. Do not
+copy server-side provider keys into the client configuration.
 
 ## Verify discovery
 
-After connecting, the client should list these tools:
+The client should discover:
 
 - `get_articles`
 - `get_article`
@@ -51,39 +52,45 @@ After connecting, the client should list these tools:
 - `get_comments`
 - `search_articles`
 
-Try a read-only call such as listing the first few articles. The result is returned as JSON serialized inside an MCP text-content item.
+Try `get_articles` or `search_articles`. Results are JSON serialized inside an
+MCP text-content item.
 
-## Understand session behavior
+## Understand sessions
 
-- The client initializes a session with a `POST /mcp` request.
-- The server assigns an `mcp-session-id`.
-- Subsequent requests must include that session ID.
-- A non-initialization POST without a session ID returns HTTP 400.
+- `GET /mcp` returns server metadata and is a quick availability check.
+- The client initializes a session with `POST /mcp`.
+- The server returns an `mcp-session-id`.
+- Subsequent MCP requests include that header.
+- A non-initialization request without a session ID returns HTTP 400.
 - An unknown session ID returns HTTP 404.
-- `GET /mcp` without a session ID returns server metadata and is a quick availability check.
+- `DELETE /mcp` closes a known session.
 
-See the [interactive request sequence](../architecture/mcp-request-sequence.html) for the complete flow.
+The session is held in the server process and is lost when the process restarts.
+See the [request sequence diagram](../architecture/mcp-request-sequence.html).
 
 ## Troubleshoot
 
 ### The client cannot connect
 
-Confirm the process is running and the URL includes `/mcp`:
+Check the process and endpoint:
 
 ```bash
-curl http://127.0.0.1:3000/mcp
+curl http://127.0.0.1:3535/healthz
+curl http://127.0.0.1:3535/mcp
 ```
 
-If you changed `PORT`, update the client URL to match.
+If `PORT` changed, update the client URL too.
 
-### The server reports `Session ID required`
+### `Session ID required`
 
-The client sent a normal MCP request before initialization. Reconnect or restart the client so it performs the initialize handshake first.
+The client sent a normal MCP request before initialization. Reconnect so it
+performs the initialize handshake first.
 
-### The server reports `Session not found`
+### `Session not found`
 
-The server process no longer recognizes the client's session, commonly after a restart. Reconnect to create a new session.
+The server restarted or the client supplied an old session ID. Reconnect.
 
 ### A DEV.to request fails
 
-The current implementation propagates upstream tool failures through the MCP SDK. Check network access, the supplied article or user identifier, and the server logs. Never include credentials or sensitive data when sharing logs.
+Check network access and the article, user, or tag input. Inspect server logs
+without sharing credentials or sensitive request data.

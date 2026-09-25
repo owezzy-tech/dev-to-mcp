@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "DEV.to Agent Publishing Platform",
+    "output": "platform-architecture.v3.html",
+    "quality_profile": "showcase",
+    "viewBox": [1520, 820],
+    "views": [
+      { "id": "request-paths", "label": "Request paths", "focus": ["mcp", "rest", "core", "forem"], "note": "MCP clients, the dashboard, and REST callers converge on the shared application core." },
+      { "id": "durable-safety", "label": "Durable safety", "focus": ["core", "postgres", "audit", "evals"], "note": "Approval, workflow, retrieval, audit, and release evaluations are server-side controls." },
+      { "id": "local-stack", "label": "Local stack", "focus": ["dashboard", "postgres", "redis", "providers"], "note": "Compose provides local persistence and coordination while provider credentials remain optional." }
+    ]
+  },
+  "components": [
+    { "id": "mcp", "type": "external", "label": "MCP clients", "sublabel": "Streamable HTTP", "pos": [40, 180], "size": [180, 72] },
+    { "id": "dashboard", "type": "frontend", "label": "Angular dashboard", "sublabel": "WebMCP + REST", "pos": [40, 570], "size": [190, 72] },
+    { "id": "rest", "type": "backend", "label": "REST API /v1", "sublabel": "sessions + JSON", "pos": [300, 570], "size": [180, 72] },
+    { "id": "core", "type": "backend", "label": "Shared use cases", "sublabel": "policies + ports", "tag": "IMPLEMENTED", "pos": [570, 320], "size": [210, 82] },
+    { "id": "workflow", "type": "security", "label": "Workflow engine", "sublabel": "approval + leases", "pos": [850, 570], "size": [200, 78] },
+    { "id": "postgres", "type": "database", "label": "PostgreSQL + pgvector", "sublabel": "Prisma + embeddings", "pos": [1120, 220], "size": [220, 78] },
+    { "id": "redis", "type": "database", "label": "Redis", "sublabel": "sessions + limits", "pos": [1120, 520], "size": [180, 72] },
+    { "id": "forem", "type": "external", "label": "Forem API", "sublabel": "DEV.to read/write", "pos": [1120, 40], "size": [190, 72] },
+    { "id": "providers", "type": "external", "label": "Model providers", "sublabel": "embeddings + generation", "pos": [1120, 700], "size": [220, 78] },
+    { "id": "audit", "type": "database", "label": "Audit + metrics", "sublabel": "redacted events", "pos": [850, 320], "size": [200, 72] },
+    { "id": "evals", "type": "security", "label": "Critical eval gate", "sublabel": "CI release checks", "pos": [570, 700], "size": [210, 72] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Client surfaces", "wraps": ["mcp", "dashboard", "rest"], "pad": 28 },
+    { "kind": "region", "label": "Application core", "wraps": ["core", "workflow", "audit", "evals"], "pad": 28 },
+    { "kind": "region", "label": "Adapters and infrastructure", "wraps": ["postgres", "redis", "forem", "providers"], "pad": 28 }
+  ],
+  "connections": [
+    { "id": "mcp-core", "from": "mcp", "to": "core", "label": "MCP tools", "variant": "emphasis" },
+    { "id": "dashboard-rest", "from": "dashboard", "to": "rest", "variant": "emphasis" },
+    { "id": "rest-core", "from": "rest", "to": "core", "label": "shared handlers", "variant": "emphasis" },
+    { "id": "core-workflow", "from": "core", "to": "workflow", "variant": "security" },
+    { "id": "core-postgres", "from": "core", "to": "postgres" },
+    { "id": "core-forem", "from": "core", "to": "forem", "label": "server-side API key", "variant": "security" },
+    { "id": "core-providers", "from": "core", "to": "providers" },
+    { "id": "workflow-audit", "from": "workflow", "to": "audit", "variant": "dashed" },
+    { "id": "evals-core", "from": "evals", "to": "core", "label": "safety gate", "variant": "security" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "One core", "items": ["MCP, REST, and dashboard share policies", "Credentials stay server-side"] },
+    { "dot": "rose", "title": "Safe publishing", "items": ["Approval binds to version and hash", "Scheduling cannot publish"] }
+  ]
+}

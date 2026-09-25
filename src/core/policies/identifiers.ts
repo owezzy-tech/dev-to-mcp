@@ -10,3 +10,21 @@ export function requirePositiveInteger(value: number, label: string): number {
   }
   return value;
 }
+
+/**
+ * Normalizes an article path to `username/slug`. Accepts the leading slash
+ * Forem returns in `article.path`, and rejects anything else so dot segments
+ * cannot redirect the request to a different Forem endpoint.
+ */
+export function requireArticlePath(value: string): string {
+  const segments = value.replace(/^\//, "").split("/");
+  const valid =
+    segments.length === 2 &&
+    segments.every((s) => s !== "" && s !== "." && s !== "..");
+  if (!valid) {
+    throw new InvalidInputError(
+      'Article path must look like "username/article-slug".',
+    );
+  }
+  return segments.join("/");
+}
