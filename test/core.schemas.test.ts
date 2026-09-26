@@ -46,6 +46,23 @@ describe("upstream schema normalization", () => {
     });
   });
 
+  it("reads negative Forem counts as zero", () => {
+    // Given
+    const upstream = {
+      id: 42,
+      title: "Hidden comments",
+      comments_count: -1,
+      public_reactions_count: -1,
+    };
+
+    // When
+    const article = normalizeArticle(upstream);
+
+    // Then
+    expect(article.comments_count).toBe(0);
+    expect(article.public_reactions_count).toBe(0);
+  });
+
   it("fills missing optional article fields with safe values", () => {
     // Given
     const upstream = { id: 42, title: "Minimal article" };
