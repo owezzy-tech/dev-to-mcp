@@ -241,8 +241,11 @@ Build and run the server image with Compose (image `dev-to-mcp:local`,
 bound to `127.0.0.1:3535`; set `MCP_PORT` to change the host port):
 
 ```bash
-docker compose up -d --build mcp
+npm run docker:mcp
 ```
+
+This rebuilds the image and recreates the container, so it always runs the
+current code, then waits until the healthcheck passes.
 
 Or with plain Docker:
 

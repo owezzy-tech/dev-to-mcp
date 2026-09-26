@@ -8,6 +8,7 @@
     "build": "vite build",
     "dev": "node --experimental-strip-types --watch src/index.ts",
     "start": "node dist/index.js",
+    "docker:mcp": "docker compose up -d --build --force-recreate --wait mcp",
     "test": "vitest",
     "test:ci": "vitest run --reporter=json --outputFile=test-results.json",
     "eval": "node --experimental-strip-types src/evals/cli.ts",
