@@ -18,12 +18,13 @@ const nullableNumber = z
   .nullish()
   .transform((value) => value ?? null);
 
+// Forem reports some counts as -1 (e.g. an article's hidden comments); treat
+// those like a missing count rather than failing the whole response.
 const nonNegativeNumber = z
   .number()
   .int()
-  .nonnegative()
   .nullish()
-  .transform((value) => value ?? 0);
+  .transform((value) => Math.max(value ?? 0, 0));
 
 const articleAuthorSchema = z.object({
   user_id: nullableNumber,
